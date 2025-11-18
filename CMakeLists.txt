@@ -65,7 +65,23 @@ add_compile_definitions($<$<BOOL:${LV_USE_FFMPEG}>:LV_USE_FFMPEG=1>)
 add_subdirectory(lvgl)
 target_include_directories(lvgl PUBLIC ${PROJECT_SOURCE_DIR} ${SDL2_INCLUDE_DIRS})
 
-set(MAIN_SOURCES src/mouse_cursor_icon.c src/hal/hal.c src/ui_widget.c)
+# 自动收集 src 目录下的源文件，避免每次新增都手动维护
+# 包含一级子目录（如 hal/），可按需扩展到更深层：使用 *.c 递归时建议 GLOB_RECURSE
+file(GLOB MAIN_SOURCES CONFIGURE_DEPENDS
+    "${PROJECT_SOURCE_DIR}/src/*.c"
+    "${PROJECT_SOURCE_DIR}/src/*/*.c"
+)
+
+# 如果启用 FreeRTOS，排除普通的 main.c，避免同时出现 main 入口
+if(USE_FREERTOS)
+    list(REMOVE_ITEM MAIN_SOURCES ${PROJECT_SOURCE_DIR}/src/main.c)
+else()
+    # 未启用 FreeRTOS 时，确保不包含 freertos_main.c（若存在）
+    if(EXISTS ${PROJECT_SOURCE_DIR}/src/freertos_main.c)
+        list(REMOVE_ITEM MAIN_SOURCES ${PROJECT_SOURCE_DIR}/src/freertos_main.c)
+    endif()
+endif()
+
 set(MAIN_LIBS lvgl lvgl::examples lvgl::demos lvgl::thorvg ${SDL2_LIBRARIES})
 
 # Create the main executable, depending on the FreeRTOS option
