@@ -2,10 +2,10 @@
 #include "lvgl/lvgl.h"
 
 // 显示设备
-#define WIN
-#ifdef WIN
+#define WIN 0
+#if WIN
 // 在win上的缩放倍率
-#define SCALE 10
+#define SCALE 5
 #else
 #define SCALE 1
 #endif
@@ -22,7 +22,6 @@
 
 
 
-// 根据设置缩放倍率调节位置
 void obj_set_pos(lv_obj_t * obj, int32_t x, int32_t y);
-// 根据设置缩放倍率调节大小
 void obj_set_size(lv_obj_t * obj, int32_t w, int32_t h);
+void grid_dsc_array(int32_t* dsc_array, int32_t* val, int32_t len);
