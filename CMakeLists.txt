@@ -70,6 +70,7 @@ target_include_directories(lvgl PUBLIC ${PROJECT_SOURCE_DIR} ${SDL2_INCLUDE_DIRS
 file(GLOB MAIN_SOURCES CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/*.c"
     "${PROJECT_SOURCE_DIR}/src/*/*.c"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/res/**/*.c"
 )
 
 # 如果启用 FreeRTOS，排除普通的 main.c，避免同时出现 main 入口
