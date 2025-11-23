@@ -506,6 +506,7 @@ void finish_loading_cb()
     /*Create a list*/
     lv_obj_t* bt_widget = add_win();
     lv_obj_t* bt_list = lv_list_create(bt_widget);
+    lv_obj_set_style_pad_all(bt_list, 0, 0);
     obj_set_size(bt_list, 160*0.6,70);
 
     obj_set_pos(bt_list,0,0);
