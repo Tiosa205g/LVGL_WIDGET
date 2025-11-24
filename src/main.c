@@ -23,7 +23,7 @@
 
 #include "hal/hal.h"
 
-#include "ui_widget.h"
+#include "ui/ui_widget.h"
 /*********************
  *      DEFINES
  *********************/

@@ -3,7 +3,7 @@
  * Bpp: 4
  * Opts: --bpp 4 --size 16 --no-compress --lcd --stride 1 --align 1 --font HarmonyOS_Sans_SC_Medium.ttf --symbols 设备连接完成置蓝牙上传下载 --format lvgl -o harmonyos_16.c
  ******************************************************************************/
-#include "ui.h"
+#include "ui/ui.h"
 #ifdef __has_include
     #if __has_include("lvgl.h")
         #ifndef LV_LVGL_H_INCLUDE_SIMPLE
