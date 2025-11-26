@@ -80,6 +80,16 @@ typedef struct
     lv_obj_t *setting_widget;
 } setting_back_data;
 
+typedef struct
+{
+    lv_obj_t *left_voice_bar;
+    lv_obj_t *right_voice_bar;
+    lv_obj_t *power_bar;
+    lv_obj_t *signal_bar;
+    char *device_name;
+
+} device_card_data;
+
 typedef enum
 {
     LV_MENU_ITEM_BUILDER_VARIANT_1,
@@ -102,5 +112,5 @@ int32_t get_signal_per(char *device_name);
 int32_t get_power_per(char *device_name);
 char *get_upload_speed();
 char *get_download_speed();
-bool link_bt(char *device_name);
-bool unlink_bt(char *device_name);
+bool link_bt(const char *device_name);
+bool unlink_bt(const char *device_name);

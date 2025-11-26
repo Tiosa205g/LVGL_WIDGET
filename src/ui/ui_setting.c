@@ -1,13 +1,16 @@
 #include "ui/ui.h"
-
+static lv_obj_t *menu;
 // 设置页面back按钮回调
-void back_to_main_cb(lv_event_t *e)
+void back_cb(lv_event_t *e)
 {
-    setting_back_data *bd = (setting_back_data *)lv_event_get_user_data(e);
-    // lv_obj_set_flag(bd->main_widget,LV_OBJ_FLAG_HIDDEN, false);
-    lv_obj_clear_flag(bd->main_widget, LV_OBJ_FLAG_HIDDEN);
-    lv_obj_del(bd->setting_widget);
-    lv_free(bd);
+    lv_obj_t* obj = lv_event_get_target_obj(e);
+    if(lv_menu_back_button_is_root(menu, obj)) {
+        setting_back_data *bd = (setting_back_data *)lv_event_get_user_data(e);
+        // lv_obj_set_flag(bd->main_widget,LV_OBJ_FLAG_HIDDEN, false);
+        lv_obj_clear_flag(bd->main_widget, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_del(bd->setting_widget);
+        lv_free(bd);
+    }
 }
 
 static lv_obj_t *create_text(lv_obj_t *parent, const char *icon, const char *txt,
@@ -80,11 +83,8 @@ void ui_setting_init(lv_event_t *e)
     LV_ASSERT_MALLOC(bd);
     bd->main_widget = main_widget;
     bd->setting_widget = setting_widget;
-    // btn = add_button(setting_widget,"text",100,60,&lv_font_montserrat_12);
-    // lv_obj_align(btn,LV_ALIGN_CENTER,0,0);
-    // lv_obj_add_event_cb(btn,back_to_main_cb,LV_EVENT_CLICKED,bd);
-    lv_obj_t *menu = lv_menu_create(setting_widget);
 
+    menu = lv_menu_create(setting_widget);
     lv_color_t bg_color = lv_obj_get_style_bg_color(menu, 0);
     if (lv_color_brightness(bg_color) > 127)
     {
@@ -95,7 +95,8 @@ void ui_setting_init(lv_event_t *e)
         lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), 0);
     }
     lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
-    lv_obj_add_event_cb(menu, back_to_main_cb, LV_EVENT_CLICKED, bd);
+
+    lv_obj_add_event_cb(menu, back_cb, LV_EVENT_CLICKED, bd);
     lv_obj_set_size(menu, lv_display_get_horizontal_resolution(NULL), lv_display_get_vertical_resolution(NULL));
     lv_obj_center(menu);
 
@@ -178,8 +179,9 @@ void ui_setting_init(lv_event_t *e)
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_menu_mode_page);
 
-    lv_menu_set_sidebar_page(menu, root_page);
+    //lv_menu_set_sidebar_page(menu, root_page);
 
-    lv_obj_send_event(lv_obj_get_child(lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), 0), 0), LV_EVENT_CLICKED,
-                      NULL);
+    // lv_obj_send_event(lv_obj_get_child(lv_obj_get_child(lv_menu_get_cur_sidebar_page(menu), 0), 0), LV_EVENT_CLICKED,
+    //                   NULL);
+    lv_menu_set_page(menu,root_page);
 }

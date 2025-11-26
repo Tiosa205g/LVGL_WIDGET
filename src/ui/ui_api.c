@@ -23,8 +23,8 @@ char **get_bt_list()
 // 获取已连接蓝牙设备的名称列表
 char **get_linked_bt_list()
 {
-    int count = 1;
-    char *names[] = {"设备1"};
+    int count = 3;
+    char *names[] = {"设备1", "设备2", "设备3"};
     char **bt_list = lv_malloc(sizeof(char *) * (count + 1));
     LV_ASSERT_MALLOC(bt_list);
     for (int i = 0; i < count; i++)
@@ -80,12 +80,12 @@ char *get_download_speed()
 }
 
 // 连接蓝牙设备
-bool link_bt(char *device_name)
+bool link_bt(const char *device_name)
 {
     return true; // 返回连接状态
 }
 // 断开蓝牙设备
-bool unlink_bt(char *device_name)
+bool unlink_bt(const char *device_name)
 {
     return true; // 返回连接状态
 }

@@ -48,7 +48,7 @@ static void list_event_handler(lv_event_t *e)
     {
         lv_state_t current_state = lv_obj_get_state(obj);
         LV_LOG_USER("state:%d", current_state);
-        char *bt_name = lv_list_get_button_text(list, obj);
+        const char *bt_name = lv_list_get_button_text(list, obj);
         // TODO:功能待验证
         if (current_state == LV_STATE_FOCUSED | LV_STATE_FOCUS_KEY) // 取消选中
         {

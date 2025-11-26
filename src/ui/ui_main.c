@@ -1,15 +1,112 @@
 #include "ui/ui.h"
 
+static lv_style_t style_indic_h; // 横向bar样式
+static lv_style_t style_indic_v; // 纵向bar样式
+
 // 设置按钮回调 -> 进入设置界面
 void setting_widget_cb(lv_event_t *e)
 {
     ui_setting_init(e);
 }
 
+// 创建设备卡片
+lv_obj_t *create_device_card(lv_obj_t *parent, char *device_name, char *icon, bool color_test)
+{
+    lv_obj_t *card = lv_obj_create(parent);
+
+    lv_obj_set_style_pad_all(card, 0, 0);
+    lv_obj_set_size(card, 160 * 0.6 - 15, (70 - 15) / 2);
+    // lv_obj_align(f_card, LV_ALIGN_TOP_LEFT, 5, 5);
+
+    lv_obj_t *symbol = lv_label_create(card);
+    lv_label_set_recolor(symbol, true);                           // 允许颜色
+    lv_label_set_text(symbol, icon);                              // 使用内置的蓝牙符号
+    lv_obj_set_style_text_font(symbol, &lv_font_harmonyos_12, 0); // 设置合适的字体大小
+    lv_obj_align(symbol, LV_ALIGN_LEFT_MID, 2, 0);
+
+    lv_obj_t *left_bar_1 = lv_bar_create(card);
+    lv_obj_add_style(left_bar_1, &style_indic_h, LV_PART_INDICATOR);
+    lv_obj_set_size(left_bar_1, 160 * 0.6 - 15 - 10 - 12 - 5 - 10, 5);
+    lv_obj_align_to(left_bar_1, symbol, LV_ALIGN_OUT_RIGHT_TOP, 2, 0);
+    lv_bar_set_range(left_bar_1, 0, 100);
+
+    lv_obj_t *right_bar_1 = lv_bar_create(card);
+    lv_obj_add_style(right_bar_1, &style_indic_h, LV_PART_INDICATOR);
+    lv_obj_set_size(right_bar_1, 160 * 0.6 - 15 - 10 - 12 - 5 - 10, 5);
+    lv_obj_align_to(right_bar_1, symbol, LV_ALIGN_OUT_RIGHT_BOTTOM, 2, 0);
+    lv_bar_set_range(right_bar_1, 0, 100);
+
+    lv_obj_t *power_bar_1 = lv_bar_create(card);
+    lv_obj_add_style(power_bar_1, &style_indic_v, LV_PART_INDICATOR);
+    lv_obj_set_size(power_bar_1, 5, 15);
+    lv_obj_align_to(power_bar_1, left_bar_1, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
+    lv_bar_set_range(power_bar_1, 0, 100);
+
+    lv_obj_t *signal_bar_1 = lv_bar_create(card);
+    lv_obj_add_style(signal_bar_1, &style_indic_v, LV_PART_INDICATOR);
+    lv_obj_set_size(signal_bar_1, 5, 15);
+    lv_obj_align_to(signal_bar_1, power_bar_1, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
+    lv_bar_set_range(signal_bar_1, 0, 100);
+
+    if (color_test)
+    {
+        // 颜色测试
+        lv_anim_t a;
+        lv_anim_init(&a);
+        lv_anim_set_exec_cb(&a, set_bar_val);
+        lv_anim_set_duration(&a, 3000);
+        lv_anim_set_reverse_duration(&a, 3000);
+        lv_anim_set_var(&a, left_bar_1);
+        lv_anim_set_values(&a, 0, 100);
+        lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+        lv_anim_start(&a);
+
+        lv_anim_t b;
+        lv_anim_init(&b);
+        lv_anim_set_exec_cb(&b, set_bar_val);
+        lv_anim_set_duration(&b, 2000);
+        // lv_anim_set_reverse_duration(&a, 3000);
+        lv_anim_set_var(&b, right_bar_1);
+        lv_anim_set_values(&b, 0, 100);
+        lv_anim_set_repeat_count(&b, LV_ANIM_REPEAT_INFINITE);
+        lv_anim_start(&b);
+
+        lv_anim_t c;
+        lv_anim_init(&c);
+        lv_anim_set_exec_cb(&c, set_bar_val);
+        lv_anim_set_duration(&c, 2000);
+        lv_anim_set_reverse_duration(&c, 2000);
+        lv_anim_set_var(&c, power_bar_1);
+        lv_anim_set_values(&c, 0, 100);
+        lv_anim_set_repeat_count(&c, LV_ANIM_REPEAT_INFINITE);
+        lv_anim_start(&c);
+
+        lv_anim_t d;
+        lv_anim_init(&d);
+        lv_anim_set_exec_cb(&d, set_bar_val);
+        lv_anim_set_duration(&d, 2000);
+        lv_anim_set_reverse_duration(&d, 2000);
+        lv_anim_set_var(&d, signal_bar_1);
+        lv_anim_set_values(&d, 0, 100);
+        lv_anim_set_repeat_count(&d, LV_ANIM_REPEAT_INFINITE);
+        lv_anim_start(&d);
+    }
+
+    device_card_data *data = lv_malloc(sizeof(device_card_data));
+    LV_ASSERT_MALLOC(data);
+    data->left_voice_bar = left_bar_1; // 通过获取obj的userdata可以直接操作内部控件数值
+    data->right_voice_bar = right_bar_1;
+    data->power_bar = power_bar_1;
+    data->signal_bar = signal_bar_1;
+    data->device_name = device_name;
+
+    lv_obj_set_user_data(card, data);
+
+    return card;
+}
+
 void ui_main_init(lv_event_t *e)
 {
-    static lv_style_t style_indic_h; // 横向bar样式
-    static lv_style_t style_indic_v; // 纵向bar样式
 
     lv_style_init(&style_indic_h);
     lv_style_set_bg_opa(&style_indic_h, LV_OPA_COVER);
@@ -37,129 +134,33 @@ void ui_main_init(lv_event_t *e)
     lv_obj_set_size(info_widget, 160 * 0.6, 70);
     lv_obj_align_to(info_widget, main_widget, LV_ALIGN_TOP_LEFT, 5, 5);
 
-    // 第一个
-    lv_obj_t *f_card = lv_obj_create(info_widget);
-    lv_obj_set_style_pad_all(f_card, 0, 0);
-    lv_obj_set_size(f_card, 160 * 0.6 - 15, (70 - 15) / 2);
-    lv_obj_align(f_card, LV_ALIGN_TOP_LEFT, 5, 5);
-
-    lv_obj_t *bt = lv_label_create(f_card);
-    lv_label_set_text(bt, LV_SYMBOL_BLUETOOTH);               // 使用内置的蓝牙符号
-    lv_obj_set_style_text_font(bt, &lv_font_harmonyos_12, 0); // 设置合适的字体大小
-    lv_obj_set_style_text_color(bt, lv_palette_main(LV_PALETTE_BLUE), 0);
-    lv_obj_align(bt, LV_ALIGN_LEFT_MID, 2, 0);
-
-    lv_obj_t *left_bar_1 = lv_bar_create(f_card);
-    lv_obj_add_style(left_bar_1, &style_indic_h, LV_PART_INDICATOR);
-    lv_obj_set_size(left_bar_1, 160 * 0.6 - 15 - 10 - 12 - 5 - 10, 5);
-    lv_obj_align_to(left_bar_1, bt, LV_ALIGN_OUT_RIGHT_TOP, 2, 0);
-    lv_bar_set_range(left_bar_1, 0, 100);
-
-    lv_obj_t *right_bar_1 = lv_bar_create(f_card);
-    lv_obj_add_style(right_bar_1, &style_indic_h, LV_PART_INDICATOR);
-    lv_obj_set_size(right_bar_1, 160 * 0.6 - 15 - 10 - 12 - 5 - 10, 5);
-    lv_obj_align_to(right_bar_1, bt, LV_ALIGN_OUT_RIGHT_BOTTOM, 2, 0);
-    lv_bar_set_range(right_bar_1, 0, 100);
-
-    lv_obj_t *power_bar_1 = lv_bar_create(f_card);
-    lv_obj_add_style(power_bar_1, &style_indic_v, LV_PART_INDICATOR);
-    lv_obj_set_size(power_bar_1, 5, 15);
-    lv_obj_align_to(power_bar_1, left_bar_1, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
-    lv_bar_set_range(power_bar_1, 0, 100);
-
-    lv_obj_t *signal_bar_1 = lv_bar_create(f_card);
-    lv_obj_add_style(signal_bar_1, &style_indic_v, LV_PART_INDICATOR);
-    lv_obj_set_size(signal_bar_1, 5, 15);
-    lv_obj_align_to(signal_bar_1, power_bar_1, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
-    lv_bar_set_range(signal_bar_1, 0, 100);
-
-    // 颜色测试
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_exec_cb(&a, set_bar_val);
-    lv_anim_set_duration(&a, 3000);
-    lv_anim_set_reverse_duration(&a, 3000);
-    lv_anim_set_var(&a, left_bar_1);
-    lv_anim_set_values(&a, 0, 100);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&a);
-
-    lv_anim_t b;
-    lv_anim_init(&b);
-    lv_anim_set_exec_cb(&b, set_bar_val);
-    lv_anim_set_duration(&b, 2000);
-    // lv_anim_set_reverse_duration(&a, 3000);
-    lv_anim_set_var(&b, right_bar_1);
-    lv_anim_set_values(&b, 0, 100);
-    lv_anim_set_repeat_count(&b, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&b);
-
-    lv_anim_t c;
-    lv_anim_init(&c);
-    lv_anim_set_exec_cb(&c, set_bar_val);
-    lv_anim_set_duration(&c, 2000);
-    lv_anim_set_reverse_duration(&c, 2000);
-    lv_anim_set_var(&c, power_bar_1);
-    lv_anim_set_values(&c, 0, 100);
-    lv_anim_set_repeat_count(&c, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&c);
-
-    lv_anim_t d;
-    lv_anim_init(&d);
-    lv_anim_set_exec_cb(&d, set_bar_val);
-    lv_anim_set_duration(&d, 2000);
-    lv_anim_set_reverse_duration(&d, 2000);
-    lv_anim_set_var(&d, signal_bar_1);
-    lv_anim_set_values(&d, 0, 100);
-    lv_anim_set_repeat_count(&d, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&d);
-
-    // 第二个
-    lv_obj_t *s_card = lv_obj_create(info_widget);
-    lv_obj_set_style_pad_all(s_card, 0, 0);
-    lv_obj_set_size(s_card, 160 * 0.6 - 15, (70 - 15) / 2);
-    lv_obj_align_to(s_card, f_card, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-
-    lv_obj_t *bt_2 = lv_label_create(s_card);
-    lv_label_set_text(bt_2, LV_SYMBOL_BLUETOOTH);               // 使用内置的蓝牙符号
-    lv_obj_set_style_text_font(bt_2, &lv_font_harmonyos_12, 0); // 设置合适的字体大小
-    lv_obj_align(bt_2, LV_ALIGN_LEFT_MID, 2, 0);
-
-    lv_obj_t *left_bar_2 = lv_bar_create(s_card);
-    lv_obj_add_style(left_bar_2, &style_indic_h, LV_PART_INDICATOR);
-    lv_obj_set_size(left_bar_2, 160 * 0.6 - 15 - 10 - 12 - 5 - 10, 5);
-    lv_obj_align_to(left_bar_2, bt_2, LV_ALIGN_OUT_RIGHT_TOP, 2, 0);
-    lv_bar_set_range(left_bar_2, 0, 100);
-
-    lv_obj_t *right_bar_2 = lv_bar_create(s_card);
-    lv_obj_add_style(right_bar_2, &style_indic_h, LV_PART_INDICATOR);
-    lv_obj_set_size(right_bar_2, 160 * 0.6 - 15 - 10 - 12 - 5 - 10, 5);
-    lv_obj_align_to(right_bar_2, bt_2, LV_ALIGN_OUT_RIGHT_BOTTOM, 2, 0);
-    lv_bar_set_range(right_bar_2, 0, 100);
-
-    lv_obj_t *power_bar_2 = lv_bar_create(s_card);
-    lv_obj_add_style(power_bar_2, &style_indic_v, LV_PART_INDICATOR);
-    lv_obj_set_size(power_bar_2, 5, 15);
-    lv_obj_align_to(power_bar_2, left_bar_2, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
-    lv_bar_set_range(power_bar_2, 0, 100);
-
-    lv_obj_t *signal_bar_2 = lv_bar_create(s_card);
-    lv_obj_add_style(signal_bar_2, &style_indic_v, LV_PART_INDICATOR);
-    lv_obj_set_size(signal_bar_2, 5, 15);
-    lv_obj_align_to(signal_bar_2, power_bar_2, LV_ALIGN_OUT_RIGHT_TOP, 3, 0);
-    lv_bar_set_range(signal_bar_2, 0, 100);
+    lv_obj_t *last_card;
+    char buf[13];
+    lv_snprintf(buf, 13, "#0000FF %s#", LV_SYMBOL_BLUETOOTH);
+    char **linked_devices = get_linked_bt_list();
+    for (int i = 0; linked_devices[i] != NULL; i++)
+    {
+        LV_LOG_USER(linked_devices[i]);
+        lv_obj_t *card = create_device_card(info_widget, linked_devices[i], buf, true);
+        if (last_card == NULL)
+            lv_obj_align(card, LV_ALIGN_TOP_LEFT, 5, 5);
+        else
+            lv_obj_align_to(card, last_card, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+        last_card = card;
+    }
 
     lv_obj_t *label_widget = lv_obj_create(main_widget);
     lv_obj_set_style_pad_all(label_widget, 0, 0);      // 去除内边距
     lv_obj_set_style_border_width(label_widget, 0, 0); // 去除边框
     lv_obj_set_size(label_widget, 160 * 0.3 + 5, 35);
     lv_obj_align_to(label_widget, info_widget, LV_ALIGN_OUT_RIGHT_MID, 2, -5);
+
     label = lv_label_create(label_widget);
     lv_label_set_recolor(label, true);
     lv_label_set_text_fmt(label, "#0000FF %s#%.1fkb/s", LV_SYMBOL_UP, 1.1);
     lv_obj_set_style_text_font(label, &lv_font_harmonyos_12, 0);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    // lv_obj_align_to(label,info_widget,LV_ALIGN_OUT_RIGHT_MID,10,-10);
+
     lv_obj_t *last = label;
     label = lv_label_create(label_widget);
     lv_label_set_recolor(label, true);
@@ -179,18 +180,17 @@ void ui_main_init(lv_event_t *e)
     // lv_obj_align_to(img,label_widget,LV_ALIGN_OUT_TOP_LEFT,1,0);
     // last = img;
 
-
     lv_obj_t *img;
     img = lv_label_create(main_widget);
     lv_label_set_text(img, LV_SYMBOL_USB);
     lv_obj_set_style_text_font(img, &lv_font_harmonyos_12, 0);
-    //lv_obj_set_style_text_color(img, lv_palette_main(LV_PALETTE_NONE), 0); // 设置状态颜色
+    // lv_obj_set_style_text_color(img, lv_palette_main(LV_PALETTE_NONE), 0); // 设置状态颜色
     lv_obj_align_to(img, label_widget, LV_ALIGN_OUT_TOP_LEFT, 3, 0);
     last = img;
     img = lv_label_create(main_widget);
     lv_label_set_text(img, LV_SYMBOL_WIFI);
     lv_obj_set_style_text_font(img, &lv_font_harmonyos_12, 0);
-    //lv_obj_set_style_text_color(img, lv_palette_main(LV_PALETTE_NONE), 0);
+    // lv_obj_set_style_text_color(img, lv_palette_main(LV_PALETTE_NONE), 0);
     lv_obj_align_to(img, last, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
     last = img;
     img = lv_label_create(main_widget);
