@@ -27,6 +27,7 @@ static void link_cb(lv_event_t *e)
             if (state) // 链接成功
             {
                 lv_obj_set_style_bg_color(btn, lv_palette_main(linked), LV_STATE_CHECKED); // 设置连接状态
+                lv_obj_set_user_data(btn,"awa");
             }
         }
     }
@@ -50,21 +51,24 @@ static void list_event_handler(lv_event_t *e)
         LV_LOG_USER("state:%d", current_state);
         const char *bt_name = lv_list_get_button_text(list, obj);
         // TODO:功能待验证
-        if (current_state == LV_STATE_FOCUSED | LV_STATE_FOCUS_KEY) // 取消选中
+        if (!lv_obj_has_state(obj, LV_STATE_CHECKED)) // 非选中状态说明之前为选中
         {
-            if(lv_color_eq(lv_obj_get_style_bg_color(obj,0),lv_palette_main(linked))) // 判断是否连接，如果是则断开连接
+            // lv_color_t c = lv_obj_get_style_bg_color(obj, 0);
+            // LV_LOG_USER("rgb:%d %d %d", c.red, c.green, c.blue);
+            char* data = (char*)lv_obj_get_user_data(obj);
+            if (lv_streq(data,"awa")) // 判断是否连接，如果是则断开连接
             {
                 bool ret = unlink_bt(bt_name);
+                LV_LOG_USER("断开连接");
                 if (!ret)
                     lv_obj_add_state(obj, LV_STATE_CHECKED);
+                else
+                    lv_obj_set_style_bg_color(obj, lv_palette_main(selected), LV_STATE_CHECKED);
+                    lv_obj_set_user_data(obj,"");
+                lv_obj_remove_state(obj, LV_STATE_CHECKED);
             }
-
         }
-        else
-        {
-            lv_obj_clear_state(obj, current_state & ~LV_STATE_CHECKED);
-        }
-
+        lv_obj_remove_state(obj, current_state & ~LV_STATE_CHECKED);
         bind_group_to_all_encoders(g1); // 外层group
         lv_group_focus_obj(list);       // 重置焦点
         LV_LOG_USER("Clicked: %s", bt_name);
@@ -84,6 +88,7 @@ void ui_bt_init(lv_event_t *e)
 {
     lv_obj_t *btn;
     lv_obj_t *label;
+    lv_obj_t *setting_widget;
     lv_obj_t *bt_widget = add_win();
 
     g1 = lv_group_create(); // 外层group
@@ -115,7 +120,9 @@ void ui_bt_init(lv_event_t *e)
         btn = add_list_obj(bt_list, bt_devices[i], list_event_handler, NULL, none);
         lv_obj_add_flag(btn, LV_OBJ_FLAG_CHECKABLE);
         lv_obj_set_style_bg_color(btn, lv_palette_main(selected), LV_STATE_CHECKED);
+        lv_obj_set_user_data(btn,"");
         lv_group_add_obj(g2, btn);
+        lv_obj_clear_state(btn,LV_STATE_FOCUSED|LV_STATE_FOCUS_KEY);
         lv_free(bt_devices[i]); // 释放申请的堆内存
     }
     lv_free(bt_devices);
@@ -147,4 +154,27 @@ void ui_bt_init(lv_event_t *e)
 
     // 滚动list移到首项
     lv_obj_scroll_to_view(lv_obj_get_child(bt_list, 0), LV_ANIM_OFF);
+
+    char **linked_devices = get_linked_bt_list();
+    for (int i = 0; linked_devices[i] != NULL; i++)
+    {
+        int32_t cnt = lv_obj_get_child_count_by_type(bt_list, &lv_list_button_class);
+        for (int j = 0; j < cnt; j++)
+        {
+            btn = lv_obj_get_child_by_type(bt_list, j, &lv_list_button_class);
+            label = lv_obj_get_child(btn, 0);
+            char *bt_name = lv_label_get_text(label); // 蓝牙的名称
+            // LV_LOG_USER("1:%s2:%s", bt_name, linked_devices[i]);
+            if (lv_streq(bt_name, linked_devices[i])) // 链接成功
+            {
+                lv_obj_set_style_bg_color(btn, lv_palette_main(linked), LV_STATE_CHECKED); // 设置连接状态
+                lv_obj_set_user_data(btn,"awa"); // 用awa标记
+                lv_obj_add_state(btn, LV_STATE_CHECKED);
+                LV_LOG_USER("已连接:%s", linked_devices[i]);
+                break;
+            }
+        }
+        lv_free(linked_devices[i]); // 释放申请的堆内存
+    }
+    lv_free(linked_devices);
 }

@@ -24,7 +24,7 @@ char **get_bt_list()
 char **get_linked_bt_list()
 {
     int count = 3;
-    char *names[] = {"设备1", "设备2", "设备3"};
+    char *names[] = {"设备1","设备3","设备4"};
     char **bt_list = lv_malloc(sizeof(char *) * (count + 1));
     LV_ASSERT_MALLOC(bt_list);
     for (int i = 0; i < count; i++)

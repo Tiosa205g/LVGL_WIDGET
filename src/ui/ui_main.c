@@ -133,20 +133,35 @@ void ui_main_init(lv_event_t *e)
     lv_obj_set_style_border_width(info_widget, 1, 0);
     lv_obj_set_size(info_widget, 160 * 0.6, 70);
     lv_obj_align_to(info_widget, main_widget, LV_ALIGN_TOP_LEFT, 5, 5);
+    lv_obj_set_style_border_width(info_widget, 0, 0); // 去除边框
 
-    lv_obj_t *last_card;
+    lv_obj_t *tabview = lv_tabview_create(info_widget);
+    lv_tabview_set_tab_bar_size(tabview, 20);
+    // lv_obj_set_size(tabview, 160 * 0.6, 70);
+    lv_obj_align(tabview, LV_ALIGN_CENTER, 0, 0);
+
     char buf[13];
     lv_snprintf(buf, 13, "#0000FF %s#", LV_SYMBOL_BLUETOOTH);
     char **linked_devices = get_linked_bt_list();
     for (int i = 0; linked_devices[i] != NULL; i++)
     {
         LV_LOG_USER(linked_devices[i]);
-        lv_obj_t *card = create_device_card(info_widget, linked_devices[i], buf, true);
-        if (last_card == NULL)
-            lv_obj_align(card, LV_ALIGN_TOP_LEFT, 5, 5);
-        else
-            lv_obj_align_to(card, last_card, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-        last_card = card;
+        char index[2];
+        lv_snprintf(index, 2, "%d", i + 1);
+
+        lv_obj_t *tab = lv_tabview_add_tab(tabview, index);
+        lv_obj_t *card = create_device_card(tab, linked_devices[i], buf, true);
+        lv_obj_set_style_pad_all(tab, 0, 0);
+        lv_obj_align(card, LV_ALIGN_CENTER, 0, 0);
+    }
+
+    lv_obj_t *tab_bar = lv_tabview_get_tab_bar(tabview); //
+    uint32_t cnt = lv_obj_get_child_count_by_type(tab_bar, &lv_button_class);
+    for (int i = 0; i < cnt; i++)
+    {
+        btn = lv_obj_get_child_by_type(tab_bar, i, &lv_button_class);
+        label = lv_obj_get_child(btn, 0);
+        lv_obj_set_style_text_font(label, &lv_font_harmonyos_12, 0);
     }
 
     lv_obj_t *label_widget = lv_obj_create(main_widget);

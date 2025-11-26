@@ -58,6 +58,7 @@ static inline void set_bar_val(void *bar, int32_t val)
 // 图片资源
 extern const lv_image_dsc_t bt_o;
 extern const lv_image_dsc_t usb;
+extern const lv_image_dsc_t about;
 extern const lv_image_dsc_t img_star;
 
 // 字体资源
