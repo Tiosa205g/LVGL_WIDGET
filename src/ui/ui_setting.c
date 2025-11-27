@@ -1,5 +1,7 @@
 #include "ui/ui.h"
+
 static lv_obj_t *menu;
+static lv_obj_t *setting_widget;
 
 static void back_cb(lv_event_t *e);      // 设置页面back按钮回调
 static void relink_bt_cb(lv_event_t *e); // 重新链接蓝牙回调
@@ -18,11 +20,10 @@ void ui_setting_init(lv_event_t *e)
     lv_obj_t *main_widget = (lv_obj_t *)lv_event_get_user_data(e);
     lv_obj_add_flag(main_widget, LV_OBJ_FLAG_HIDDEN);
 
-    lv_obj_t *setting_widget = add_win();
+    setting_widget = add_win();
     setting_back_data *bd = lv_malloc(sizeof(setting_back_data));
     LV_ASSERT_MALLOC(bd);
     bd->main_widget = main_widget;
-    bd->setting_widget = setting_widget;
 
     menu = lv_menu_create(setting_widget);
     lv_color_t bg_color = lv_obj_get_style_bg_color(menu, 0);
@@ -116,7 +117,7 @@ static void back_cb(lv_event_t *e)
         setting_back_data *bd = (setting_back_data *)lv_event_get_user_data(e);
         // lv_obj_set_flag(bd->main_widget,LV_OBJ_FLAG_HIDDEN, false);
         lv_obj_clear_flag(bd->main_widget, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_del(bd->setting_widget);
+        lv_obj_del(setting_widget);
         lv_free(bd);
     }
 }
@@ -125,6 +126,7 @@ static void relink_bt_cb(lv_event_t *e)
 {
     lv_obj_t *setting_widget = (lv_obj_t *)lv_event_get_user_data(e);
     lv_obj_del(setting_widget);
+    free_main_widget();
     ui_bt_init(NULL);
 }
 
