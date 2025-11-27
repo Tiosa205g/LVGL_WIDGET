@@ -71,6 +71,9 @@ file(GLOB MAIN_SOURCES CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/*.c"
     "${PROJECT_SOURCE_DIR}/src/*/*.c"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/res/**/*.c"
+    "${PROJECT_SOURCE_DIR}/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/src/*/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/res/**/*.cpp"
 )
 
 # 如果启用 FreeRTOS，排除普通的 main.c，避免同时出现 main 入口
