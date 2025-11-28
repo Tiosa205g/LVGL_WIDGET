@@ -23,7 +23,8 @@
 
 #include "hal/hal.h"
 
-#include "ui/ui_widget.h"
+#include "ui/ui.h"
+#include "ui/ui_loading.h"
 /*********************
  *      DEFINES
  *********************/
@@ -68,7 +69,8 @@ int main(int argc, char **argv)
   /* - lv_example_label_1(); */
   /* - etc. */
   //lv_demo_widgets();
-  ui_init();
+  ui_loading_init();
+  ui_loading_set_percent(100);
   while(1) {
     /* Periodically call the lv_task handler.
      * It could be done in a timer interrupt or an OS task too.*/

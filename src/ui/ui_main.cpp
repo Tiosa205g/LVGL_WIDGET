@@ -136,7 +136,7 @@ void ui_main_init(lv_event_t *e)
 static void setting_widget_cb(lv_event_t *e)
 {
     // lv_timer_delete(pull_data_timer);
-    ui_setting_init(e);
+    ui_setting_init();
 }
 
 // 创建设备卡片
@@ -222,7 +222,7 @@ static lv_obj_t *create_device_card(lv_obj_t *parent, char *device_name, char *i
         lv_anim_start(&d);
     }
 
-    device_card_data *data = lv_malloc(sizeof(device_card_data));
+    device_card_data *data = (device_card_data *)lv_malloc(sizeof(device_card_data));
     LV_ASSERT_MALLOC(data);
     data->left_voice_bar = left_bar_1; // 通过获取obj的userdata可以直接操作内部控件数值
     data->right_voice_bar = right_bar_1;
@@ -268,4 +268,9 @@ void free_main_widget()
     }
     lv_timer_delete(pull_data_timer);
     lv_obj_delete(main_widget);
+}
+
+void set_hidden_main_widget(bool state)
+{
+    lv_obj_set_flag(main_widget, LV_OBJ_FLAG_HIDDEN, state);
 }

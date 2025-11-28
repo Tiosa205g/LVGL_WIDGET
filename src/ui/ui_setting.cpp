@@ -17,27 +17,22 @@ static lv_obj_t *create_sub_page(lv_obj_t *parent); // 新建子页面
 void ui_setting_init(lv_event_t *e)
 {
     lv_obj_t *btn;
-    lv_obj_t *main_widget = (lv_obj_t *)lv_event_get_user_data(e);
-    lv_obj_add_flag(main_widget, LV_OBJ_FLAG_HIDDEN);
 
+    set_hidden_main_widget(true);
     setting_widget = add_win();
-    setting_back_data *bd = lv_malloc(sizeof(setting_back_data));
-    LV_ASSERT_MALLOC(bd);
-    bd->main_widget = main_widget;
-
     menu = lv_menu_create(setting_widget);
-    lv_color_t bg_color = lv_obj_get_style_bg_color(menu, 0);
+    lv_color_t bg_color = lv_obj_get_style_bg_color(menu, LV_PART_MAIN);
     if (lv_color_brightness(bg_color) > 127)
     {
-        lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 10), 0);
+        lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, LV_PART_MAIN), 10), 0);
     }
     else
     {
-        lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, 0), 50), 0);
+        lv_obj_set_style_bg_color(menu, lv_color_darken(lv_obj_get_style_bg_color(menu, LV_PART_MAIN), 50), 0);
     }
     lv_menu_set_mode_root_back_button(menu, LV_MENU_ROOT_BACK_BUTTON_ENABLED);
 
-    lv_obj_add_event_cb(menu, back_cb, LV_EVENT_CLICKED, bd);
+    lv_obj_add_event_cb(menu, back_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_set_size(menu, lv_display_get_horizontal_resolution(NULL) - 5, lv_display_get_vertical_resolution(NULL) - 5);
     lv_obj_center(menu);
 
@@ -62,11 +57,6 @@ void ui_setting_init(lv_event_t *e)
     cont = create_text(section, NULL, "Legal information", LV_MENU_ITEM_BUILDER_VARIANT_1);
     lv_menu_set_load_page_event(menu, cont, sub_legal_info_page);
 
-    // 蓝牙
-    section = lv_menu_section_create(sub_bt_page);
-    cont = create_text(section, NULL, "返回连接蓝牙界面", LV_MENU_ITEM_BUILDER_VARIANT_1);
-
-    lv_obj_add_event_cb(cont, relink_bt_cb, LV_EVENT_CLICKED, setting_widget);
     // lv_obj_t *sub_mechanics_page = lv_menu_page_create(menu, NULL);
     // lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
     // lv_menu_separator_create(sub_mechanics_page);
@@ -76,7 +66,7 @@ void ui_setting_init(lv_event_t *e)
     // create_slider(section, LV_SYMBOL_SETTINGS, "Weight limit", 0, 150, 80);
     /*Create a root page*/
     lv_obj_t *root_page = lv_menu_page_create(menu, "设置");
-    lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
+    lv_obj_set_style_pad_hor(root_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), LV_PART_MAIN), 0);
     section = lv_menu_section_create(root_page);
     // cont = create_text(section, NULL, "Mechanics", LV_MENU_ITEM_BUILDER_VARIANT_1);
     // lv_group_add_obj(lv_group_get_default(), cont);
@@ -84,20 +74,29 @@ void ui_setting_init(lv_event_t *e)
 
     // create_text(root_page, NULL, "     ", LV_MENU_ITEM_BUILDER_VARIANT_1);
     section = lv_menu_section_create(root_page);
-    cont = create_text(section, LV_SYMBOL_AUDIO, "音频", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, LV_SYMBOL_AUDIO, "音频设置", LV_MENU_ITEM_BUILDER_VARIANT_1);
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_audio_page);
     section = lv_menu_section_create(root_page);
-    cont = create_text(section, LV_SYMBOL_BLUETOOTH, "蓝牙", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, LV_SYMBOL_BLUETOOTH, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1);
     lv_group_add_obj(lv_group_get_default(), cont);
-    lv_menu_set_load_page_event(menu, cont, sub_bt_page);
+    // lv_menu_set_load_page_event(menu, cont, sub_bt_page);
+    lv_obj_add_event_cb(cont, relink_bt_cb, LV_EVENT_CLICKED, NULL);
     section = lv_menu_section_create(root_page);
-    cont = create_text(section, LV_SYMBOL_WIFI, "WIFI", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, LV_SYMBOL_WIFI, "无线传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 传输协议（BLE udp tcp）
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_wifi_page);
+    section = lv_menu_section_create(root_page);
+    cont = create_text(section, LV_SYMBOL_WIFI, "USB传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 模式（音频传输、读卡器）
+    lv_group_add_obj(lv_group_get_default(), cont);
+    lv_menu_set_load_page_event(menu, cont, sub_wifi_page);
+    section = lv_menu_section_create(root_page);
+    cont = create_text(section, LV_SYMBOL_WIFI, "系统信息", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    lv_group_add_obj(lv_group_get_default(), cont);
+    lv_menu_set_load_page_event(menu, cont, sub_wifi_page); // TODO: AWA  CPU核1、2占用 运行内存（IRAM PSRAM） tf储存
 
     section = lv_menu_section_create(root_page);
-    cont = create_text(section, &about, "关于", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, &about, "关于", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 大标题 固件版本 作者 链接
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_about_page);
 
@@ -114,20 +113,16 @@ static void back_cb(lv_event_t *e)
     lv_obj_t *obj = lv_event_get_target_obj(e);
     if (lv_menu_back_button_is_root(menu, obj))
     {
-        setting_back_data *bd = (setting_back_data *)lv_event_get_user_data(e);
-        // lv_obj_set_flag(bd->main_widget,LV_OBJ_FLAG_HIDDEN, false);
-        lv_obj_clear_flag(bd->main_widget, LV_OBJ_FLAG_HIDDEN);
+        set_hidden_main_widget(false);
         lv_obj_del(setting_widget);
-        lv_free(bd);
     }
 }
 // 重新连接蓝牙点击
 static void relink_bt_cb(lv_event_t *e)
 {
-    lv_obj_t *setting_widget = (lv_obj_t *)lv_event_get_user_data(e);
     lv_obj_del(setting_widget);
     free_main_widget();
-    ui_bt_init(NULL);
+    ui_bt_init();
 }
 
 static lv_obj_t *create_text(lv_obj_t *parent, const void *icon, const char *txt,
@@ -184,14 +179,14 @@ static lv_obj_t *create_switch(lv_obj_t *parent, const char *icon, const char *t
     lv_obj_t *obj = create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_1);
 
     lv_obj_t *sw = lv_switch_create(obj);
-    lv_obj_add_state(sw, chk ? LV_STATE_CHECKED : 0);
+    lv_obj_add_state(sw, chk ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
 
     return obj;
 }
 static lv_obj_t *create_sub_page(lv_obj_t *parent)
 {
     lv_obj_t *sub_page = lv_menu_page_create(parent, NULL);
-    lv_obj_set_style_pad_hor(sub_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(parent), 0), 0);
+    lv_obj_set_style_pad_hor(sub_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(parent), LV_PART_MAIN), 0);
     lv_menu_separator_create(sub_page);
     return sub_page;
 }

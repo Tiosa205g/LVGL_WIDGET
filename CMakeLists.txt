@@ -78,7 +78,7 @@ file(GLOB MAIN_SOURCES CONFIGURE_DEPENDS
 
 # 如果启用 FreeRTOS，排除普通的 main.c，避免同时出现 main 入口
 if(USE_FREERTOS)
-    list(REMOVE_ITEM MAIN_SOURCES ${PROJECT_SOURCE_DIR}/src/main.c)
+    list(REMOVE_ITEM MAIN_SOURCES ${PROJECT_SOURCE_DIR}/src/main.cpp)
 else()
     # 未启用 FreeRTOS 时，确保不包含 freertos_main.c（若存在）
     if(EXISTS ${PROJECT_SOURCE_DIR}/src/freertos_main.c)
@@ -93,7 +93,7 @@ if(USE_FREERTOS)
     list(APPEND MAIN_SOURCES src/freertos_main.c src/freertos/freertos_posix_port.c ${FREERTOS_SOURCES})
     list(APPEND MAIN_LIBS freertos_config freertos_kernel)
 else()
-    list(APPEND MAIN_SOURCES src/main.c)
+    list(APPEND MAIN_SOURCES src/main.cpp)
 endif()
 
 
