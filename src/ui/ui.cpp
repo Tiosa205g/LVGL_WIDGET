@@ -60,10 +60,15 @@ void info_msgbox(std::string title, std::string content)
 {
     lv_obj_t *btn;
     lv_obj_t *mbox = lv_msgbox_create(NULL);
-
+    lv_obj_set_size(mbox, WIDGET_H / 2, WIDGET_V / 2);
     lv_msgbox_add_title(mbox, title.c_str());
     lv_msgbox_add_text(mbox, content.c_str());
 
     btn = lv_msgbox_add_footer_button(mbox, "确定");
-    lv_obj_set_size(mbox, WIDGET_H, WIDGET_V);
+
+    lv_group_add_obj(lv_group_get_default(), btn);
+    lv_obj_add_event_cb(btn, [](lv_event_t *e)
+                        {
+        lv_obj_t* mbox = (lv_obj_t*)lv_event_get_user_data(e);
+        lv_msgbox_close(mbox); }, LV_EVENT_CLICKED, mbox);
 }

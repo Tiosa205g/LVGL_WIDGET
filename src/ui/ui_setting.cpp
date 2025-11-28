@@ -1,4 +1,6 @@
 #include "ui/ui.h"
+#include "ui/ui_setting.h"
+#include <string>
 
 static lv_obj_t *menu;
 static lv_obj_t *setting_widget;
@@ -13,7 +15,6 @@ static lv_obj_t *create_slider(lv_obj_t *parent, const char *icon, const char *t
 static lv_obj_t *create_switch(lv_obj_t *parent, const char *icon, const char *txt, bool chk);
 
 static lv_obj_t *create_sub_page(lv_obj_t *parent); // 新建子页面
-
 void ui_setting_init()
 {
     lv_obj_t *btn;
@@ -41,21 +42,19 @@ void ui_setting_init()
 
     /*Create sub pages*/
     lv_obj_t *sub_about_page = create_sub_page(menu);
-    lv_obj_t *sub_software_info_page = create_sub_page(menu);
-    lv_obj_t *sub_legal_info_page = create_sub_page(menu);
+    lv_obj_t *sub_usb_page = create_sub_page(menu);
+    lv_obj_t *sub_system_page = create_sub_page(menu);
     lv_obj_t *sub_audio_page = create_sub_page(menu);
-    lv_obj_t *sub_bt_page = create_sub_page(menu);
-    lv_obj_t *sub_wifi_page = create_sub_page(menu);
-
-    lv_obj_t *label = lv_label_create(sub_software_info_page);
-    lv_label_set_text(label, "dududu");
+    // lv_obj_t *sub_bt_page = create_sub_page(menu);
+    lv_obj_t *sub_wireless_page = create_sub_page(menu);
 
     // 关于
     section = lv_menu_section_create(sub_about_page);
-    cont = create_text(section, NULL, "Software information", LV_MENU_ITEM_BUILDER_VARIANT_1);
-    lv_menu_set_load_page_event(menu, cont, sub_software_info_page);
-    cont = create_text(section, NULL, "Legal information", LV_MENU_ITEM_BUILDER_VARIANT_1);
-    lv_menu_set_load_page_event(menu, cont, sub_legal_info_page);
+    cont = create_text(section, NULL, "无线麦克风", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, NULL, ("固件版本:" + std::string(VERSION)).c_str(), LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, NULL, "作者:awa", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, NULL, ("外部链接:\n" + std::string(EXTERNAL_LINK)).c_str(), LV_MENU_ITEM_BUILDER_VARIANT_1);
+    section = lv_menu_section_create(sub_usb_page);
 
     // lv_obj_t *sub_mechanics_page = lv_menu_page_create(menu, NULL);
     // lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
@@ -71,8 +70,6 @@ void ui_setting_init()
     // cont = create_text(section, NULL, "Mechanics", LV_MENU_ITEM_BUILDER_VARIANT_1);
     // lv_group_add_obj(lv_group_get_default(), cont);
     // lv_menu_set_load_page_event(menu, cont, sub_mechanics_page);
-
-    // create_text(root_page, NULL, "     ", LV_MENU_ITEM_BUILDER_VARIANT_1);
     section = lv_menu_section_create(root_page);
     cont = create_text(section, LV_SYMBOL_AUDIO, "音频设置", LV_MENU_ITEM_BUILDER_VARIANT_1);
     lv_group_add_obj(lv_group_get_default(), cont);
@@ -85,15 +82,15 @@ void ui_setting_init()
     section = lv_menu_section_create(root_page);
     cont = create_text(section, LV_SYMBOL_WIFI, "无线传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 传输协议（BLE udp tcp）
     lv_group_add_obj(lv_group_get_default(), cont);
-    lv_menu_set_load_page_event(menu, cont, sub_wifi_page);
+    lv_menu_set_load_page_event(menu, cont, sub_wireless_page);
     section = lv_menu_section_create(root_page);
-    cont = create_text(section, LV_SYMBOL_WIFI, "USB传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 模式（音频传输、读卡器）
+    cont = create_text(section, LV_SYMBOL_USB, "USB传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 模式（音频传输、读卡器）
     lv_group_add_obj(lv_group_get_default(), cont);
-    lv_menu_set_load_page_event(menu, cont, sub_wifi_page);
+    lv_menu_set_load_page_event(menu, cont, sub_usb_page);
     section = lv_menu_section_create(root_page);
-    cont = create_text(section, LV_SYMBOL_WIFI, "系统信息", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, &system_info, "系统信息", LV_MENU_ITEM_BUILDER_VARIANT_1);
     lv_group_add_obj(lv_group_get_default(), cont);
-    lv_menu_set_load_page_event(menu, cont, sub_wifi_page); // TODO: AWA  CPU核1、2占用 运行内存（IRAM PSRAM） tf储存
+    lv_menu_set_load_page_event(menu, cont, sub_system_page); // TODO: AWA  CPU核1、2占用 运行内存（IRAM PSRAM） tf储存
 
     section = lv_menu_section_create(root_page);
     cont = create_text(section, &about, "关于", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 大标题 固件版本 作者 链接
@@ -153,8 +150,15 @@ static lv_obj_t *create_text(lv_obj_t *parent, const void *icon, const char *txt
     }
     // lv_obj_set_style_text_font(obj,&lv_font_montserrat_10,0);
     lv_obj_add_flag(obj, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
     lv_obj_remove_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     lv_group_add_obj(lv_group_get_default(), obj);
+
+    // lv_obj_add_event_cb(obj, [](lv_event_t *e)
+    //                     {
+    //     lv_obj_t* target = lv_event_get_target_obj(e);
+    //     lv_obj_scroll_to_view(target, LV_ANIM_ON);
+    // }, LV_EVENT_FOCUSED, NULL);
     return obj;
 }
 static lv_obj_t *create_slider(lv_obj_t *parent, const char *icon, const char *txt, int32_t min, int32_t max,

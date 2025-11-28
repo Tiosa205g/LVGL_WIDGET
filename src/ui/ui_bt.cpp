@@ -92,6 +92,7 @@ static void link_cb(lv_event_t *e)
             }
         }
     }
+    info_msgbox("awa", "coneettt");
 }
 
 // 完成按钮点击回调 进入主窗口
@@ -133,7 +134,6 @@ static void list_event_handler(lv_event_t *e)
         bind_group_to_all_encoders(g1); // 外层group
         lv_group_focus_obj(list);       // 重置焦点
         LV_LOG_USER("Clicked: %s", bt_name);
-        info_msgbox("awa", "coneettt");
     }
 }
 
@@ -197,7 +197,8 @@ static void bt_list_update_event_cb(lv_event_t *e)
 // 添加蓝牙/更新蓝牙状态
 void update_bt(device_data *dev)
 {
-    lv_obj_send_event(bt_list, EVENT_UPDATE, dev);
+    if(lv_obj_get_parent(bt_list) != NULL)
+        lv_obj_send_event(bt_list, EVENT_UPDATE, dev);
 }
 
 // 连接蓝牙设备

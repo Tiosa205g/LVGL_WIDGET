@@ -14,8 +14,7 @@
 #endif
 
 // 图片资源
-extern const lv_image_dsc_t bt_o;
-extern const lv_image_dsc_t usb;
+extern const lv_image_dsc_t system_info;
 extern const lv_image_dsc_t about;
 extern const lv_image_dsc_t img_star;
 

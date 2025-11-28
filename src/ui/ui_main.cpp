@@ -50,8 +50,8 @@ void ui_main_init()
     // lv_obj_set_size(tabview, 160 * 0.6, 70);
     lv_obj_align(tabview, LV_ALIGN_CENTER, 0, 0);
 
-    char buf[13];
-    lv_snprintf(buf, 13, "#0000FF %s#", LV_SYMBOL_BLUETOOTH);
+    // char buf[13];
+    // lv_snprintf(buf, 13, "#0000FF %s#", LV_SYMBOL_BLUETOOTH);
     // char **linked_devices = get_linked_bt_list();
     // for (int i = 0; linked_devices[i] != NULL && i < MAX_DEVICE_COUNT; i++)
     // {
@@ -83,13 +83,13 @@ void ui_main_init()
 
     upload_label = lv_label_create(label_widget);
     lv_label_set_recolor(upload_label, true);
-    lv_label_set_text_fmt(upload_label, "#00FF00 %s#%db/s", LV_SYMBOL_UP, 0);
+    lv_label_set_text_fmt(upload_label, "#00FF00 %s#%.1fb/s", LV_SYMBOL_UP, 0);
     lv_obj_set_style_text_font(upload_label, &lv_font_harmonyos_12, 0);
     lv_obj_align(upload_label, LV_ALIGN_TOP_LEFT, 0, 0);
 
     download_label = lv_label_create(label_widget);
     lv_label_set_recolor(download_label, true);
-    lv_label_set_text_fmt(download_label, "#00FF00 %s#%db/s", LV_SYMBOL_DOWN, 1.1);
+    lv_label_set_text_fmt(download_label, "#00FF00 %s#%.1fb/s", LV_SYMBOL_DOWN, 1.1);
     lv_obj_set_style_text_font(download_label, &lv_font_harmonyos_12, 0);
     lv_obj_align_to(download_label, upload_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
 
@@ -238,10 +238,10 @@ static void pull_data_timer_cb(lv_timer_t *timer)
     // lv_label_set_text_fmt(upload_label, "#00FF00 %s#%s", LV_SYMBOL_UP, get_upload_speed());
     // lv_label_set_text_fmt(download_label, "#00FF00 %s#%s", LV_SYMBOL_DOWN, get_download_speed());
 
-    lv_obj_t *cur_tab = tabs[lv_tabview_get_tab_active(tabview)];
-    lv_obj_t *card = lv_obj_get_child(cur_tab, 0);
-    device_card_data *card_data = (device_card_data *)lv_obj_get_user_data(card);
-    char *name = card_data->device_name;
+    // lv_obj_t *cur_tab = tabs[lv_tabview_get_tab_active(tabview)];
+    // lv_obj_t *card = lv_obj_get_child(cur_tab, 0);
+    // device_card_data *card_data = (device_card_data *)lv_obj_get_user_data(card);
+    // char *name = card_data->device_name;
 
     // lv_bar_set_value(card_data->left_voice_bar, get_left_voice_per(name), LV_ANIM_ON);
     // lv_bar_set_value(card_data->right_voice_bar, get_right_voice_per(name), LV_ANIM_ON);
