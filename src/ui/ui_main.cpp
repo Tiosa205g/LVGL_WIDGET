@@ -14,7 +14,7 @@ static lv_obj_t *create_device_card(lv_obj_t *parent, char *device_name, char *i
 static void setting_widget_cb(lv_event_t *e);      // 设置按钮回调
 static void pull_data_timer_cb(lv_timer_t *timer); // 获取设备数据回调
 
-void ui_main_init(lv_event_t *e)
+void ui_main_init()
 {
     lv_group_t *g = lv_group_create();
     lv_group_set_default(g);
@@ -34,8 +34,6 @@ void ui_main_init(lv_event_t *e)
     lv_obj_t *btn;
     lv_obj_t *label;
     lv_obj_t *last;
-    lv_obj_t *bt_widget = (lv_obj_t *)lv_event_get_user_data(e);
-    lv_obj_del(bt_widget); // 删除蓝牙窗口组件
 
     main_widget = add_win();
 

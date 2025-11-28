@@ -14,7 +14,7 @@ static lv_obj_t *create_switch(lv_obj_t *parent, const char *icon, const char *t
 
 static lv_obj_t *create_sub_page(lv_obj_t *parent); // 新建子页面
 
-void ui_setting_init(lv_event_t *e)
+void ui_setting_init()
 {
     lv_obj_t *btn;
 

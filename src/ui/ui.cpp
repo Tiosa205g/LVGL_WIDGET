@@ -9,13 +9,13 @@ lv_obj_t *add_win()
     return widget;
 }
 // 添加带标题按钮
-lv_obj_t *add_button(lv_obj_t *parent, char *title, int32_t w, int32_t h, const lv_font_t *font)
+lv_obj_t *add_button(lv_obj_t *parent, std::string title, int32_t w, int32_t h, const lv_font_t *font)
 {
     lv_obj_t *btn = lv_button_create(parent);
     lv_obj_t *label = lv_label_create(btn);
     lv_obj_set_size(btn, w, h);
     // lv_obj_set_size(label,w,h);
-    lv_label_set_text(label, title);
+    lv_label_set_text(label, title.c_str());
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
     if (font != NULL)
     {
@@ -25,9 +25,9 @@ lv_obj_t *add_button(lv_obj_t *parent, char *title, int32_t w, int32_t h, const 
 }
 
 // 添加列表按钮
-lv_obj_t *add_list_obj(lv_obj_t *list, char *content, lv_event_cb_t cb, const lv_font_t *font, std::optional<lv_color_t> bg_color)
+lv_obj_t *add_list_obj(lv_obj_t *list, std::string content, lv_event_cb_t cb, const lv_font_t *font, std::optional<lv_color_t> bg_color)
 {
-    lv_obj_t *btn = lv_list_add_button(list, NULL, content);
+    lv_obj_t *btn = lv_list_add_button(list, NULL, content.c_str());
     // lv_obj_set_style_pad_all(btn, 1, 0);
 
     // lv_obj_set_size(btn,lv_pct(90),15);

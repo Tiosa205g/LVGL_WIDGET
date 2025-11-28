@@ -1,6 +1,7 @@
 #include "ui/ui_bt.h"
 // static bool in_select_mode = false;
 static lv_obj_t *bt_list;
+static lv_obj_t *bt_widget;
 static lv_group_t *g1; // list 俩个按钮
 static lv_group_t *g2; // list内部设备选项
 
@@ -9,13 +10,11 @@ static void list_event_handler(lv_event_t *e);     // bt_list 项被点击
 static void main_widget_cb(lv_event_t *e);         // 完成按钮回调 -> 主窗口
 static void link_cb(lv_event_t *e);                // 蓝牙连接按钮点击回调函数
 
-
 void ui_bt_init()
 {
     lv_obj_t *btn;
     lv_obj_t *label;
-    lv_obj_t *setting_widget;
-    lv_obj_t *bt_widget = add_win();
+    bt_widget = add_win();
 
     g1 = lv_group_create(); // 外层group
     g2 = lv_group_create(); // 内层group list的内部按钮选项
@@ -98,7 +97,7 @@ void ui_bt_init()
             if (lv_streq(bt_name, linked_devices[i])) // 链接成功
             {
                 lv_obj_set_style_bg_color(btn, COLOR_LINKED, LV_STATE_CHECKED); // 设置连接状态
-                lv_obj_set_user_data(btn, BT_LINKED);                                          // 用awa标记
+                lv_obj_set_user_data(btn, BT_LINKED);                           // 用awa标记
                 lv_obj_add_state(btn, LV_STATE_CHECKED);
                 LV_LOG_USER("已连接:%s", linked_devices[i]);
                 break;
@@ -139,6 +138,7 @@ static void link_cb(lv_event_t *e)
 static void main_widget_cb(lv_event_t *e)
 {
     ui_main_init();
+    lv_obj_delete(bt_widget);
 }
 
 // 蓝牙列表点击事件回调

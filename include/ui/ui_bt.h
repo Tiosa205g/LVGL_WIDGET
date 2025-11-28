@@ -7,4 +7,4 @@
 
 #define COLOR_LINKED lv_palette_main(LV_PALETTE_GREEN)
 #define COLOR_SELECTED lv_palette_main(LV_PALETTE_RED)
-#define COLOR_NONE lv_palette_main(LV_PALETTE_NONE)
+#define COLOR_NONE std::nullopt
