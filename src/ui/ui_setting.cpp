@@ -78,7 +78,7 @@ void ui_setting_init()
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_audio_page);
     section = lv_menu_section_create(root_page);
-    cont = create_text(section, LV_SYMBOL_BLUETOOTH, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    cont = create_text(section, LV_SYMBOL_BLUETOOTH, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1); // finish
     lv_group_add_obj(lv_group_get_default(), cont);
     // lv_menu_set_load_page_event(menu, cont, sub_bt_page);
     lv_obj_add_event_cb(cont, relink_bt_cb, LV_EVENT_CLICKED, NULL);

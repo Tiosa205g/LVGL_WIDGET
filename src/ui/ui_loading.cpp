@@ -23,10 +23,11 @@ static void loding_timer_cb(lv_timer_t *timer)
     }
     if (val >= lv_bar_get_max_value(bar))
     {
-        ui_bt_init();
+
         lv_obj_delete(loading_widget);
-        lv_timer_delete(timer);
+        ui_bt_init();
         LV_LOG_INFO("加载完成");
+        lv_timer_delete(timer);
     }
 }
 

@@ -40,6 +40,7 @@ lv_obj_t *add_win();
 lv_obj_t *add_button(lv_obj_t *parent, std::string title, int32_t w, int32_t h, const lv_font_t *font);
 lv_obj_t *add_list_obj(lv_obj_t *list, std::string content, lv_event_cb_t cb, const lv_font_t *font, std::optional<lv_color_t> bg_color);
 
+
 void free_main_widget();
 void set_hidden_main_widget(bool state);
 
@@ -64,16 +65,3 @@ typedef enum
     LV_MENU_ITEM_BUILDER_VARIANT_1,
     LV_MENU_ITEM_BUILDER_VARIANT_2
 } lv_menu_builder_variant_t;
-
-
-// ui_api
-char **get_bt_list();
-char **get_linked_bt_list();
-int32_t get_left_voice_per(const char *device_name);
-int32_t get_right_voice_per(const char *device_name);
-int32_t get_signal_per(const char *device_name);
-int32_t get_power_per(const char *device_name);
-char *get_upload_speed();
-char *get_download_speed();
-bool link_bt(const char *device_name);
-bool unlink_bt(const char *device_name);
