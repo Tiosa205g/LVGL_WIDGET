@@ -1,6 +1,7 @@
 #include "ui/ui.h"
 #include "ui/ui_setting.h"
 #include <string>
+#include <optional>
 
 static lv_obj_t *menu;
 static lv_obj_t *setting_widget;
@@ -9,11 +10,11 @@ static void back_cb(lv_event_t *e);      // 设置页面back按钮回调
 static void relink_bt_cb(lv_event_t *e); // 重新链接蓝牙回调
 
 static lv_obj_t *create_text(lv_obj_t *parent, const void *icon, const char *txt,
-                             lv_menu_builder_variant_t builder_variant);
+                             lv_menu_builder_variant_t builder_variant, std::optional<lv_obj_t **> label_o = std::nullopt);
 static lv_obj_t *create_slider(lv_obj_t *parent, const char *icon, const char *txt, int32_t min, int32_t max,
                                int32_t val);
 static lv_obj_t *create_switch(lv_obj_t *parent, const char *icon, const char *txt, bool chk);
-
+static lv_obj_t *create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, std::optional<lv_obj_t **> dd_o = std::nullopt);
 static lv_obj_t *create_sub_page(lv_obj_t *parent); // 新建子页面
 void ui_setting_init()
 {
@@ -39,22 +40,61 @@ void ui_setting_init()
 
     lv_obj_t *cont;
     lv_obj_t *section;
+    lv_obj_t *dd;
 
     /*Create sub pages*/
     lv_obj_t *sub_about_page = create_sub_page(menu);
     lv_obj_t *sub_usb_page = create_sub_page(menu);
     lv_obj_t *sub_system_page = create_sub_page(menu);
     lv_obj_t *sub_audio_page = create_sub_page(menu);
-    // lv_obj_t *sub_bt_page = create_sub_page(menu);
     lv_obj_t *sub_wireless_page = create_sub_page(menu);
 
     // 关于
     section = lv_menu_section_create(sub_about_page);
-    cont = create_text(section, NULL, "无线麦克风", LV_MENU_ITEM_BUILDER_VARIANT_1);
-    cont = create_text(section, NULL, ("固件版本:" + std::string(VERSION)).c_str(), LV_MENU_ITEM_BUILDER_VARIANT_1);
-    cont = create_text(section, NULL, "作者:awa", LV_MENU_ITEM_BUILDER_VARIANT_1);
-    cont = create_text(section, NULL, ("外部链接:\n" + std::string(EXTERNAL_LINK)).c_str(), LV_MENU_ITEM_BUILDER_VARIANT_1);
+    create_text(section, NULL, "无线麦克风", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    create_text(section, NULL, ("固件版本:" + std::string(VERSION)).c_str(), LV_MENU_ITEM_BUILDER_VARIANT_1);
+    section = lv_menu_section_create(sub_about_page);
+    create_text(section, NULL, "作者:awa", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    create_text(section, NULL, ("外部链接:\n" + std::string(EXTERNAL_LINK)).c_str(), LV_MENU_ITEM_BUILDER_VARIANT_1);
+
+    section = lv_menu_section_create(sub_system_page); // CPU核1、2占用 运行内存（IRAM PSRAM） tf储存
+    create_text(section, NULL, "CPU 1", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    create_text(section, NULL, "CPU 2", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    create_text(section, NULL, "IRAM", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    create_text(section, NULL, "PSRAM", LV_MENU_ITEM_BUILDER_VARIANT_1);
+    create_text(section, NULL, "外置存储", LV_MENU_ITEM_BUILDER_VARIANT_1);
+
     section = lv_menu_section_create(sub_usb_page);
+    create_dropdown(section, NULL, "传输模式", "音频传输\n"
+                                               "读卡器",
+                    &dd);
+
+    // 音频 频率 比特 通道 下拉菜单
+    // 48000 96000 192000 Hz
+    // 16 24 32 bit
+    // 单声道 立体
+    section = lv_menu_section_create(sub_audio_page);
+    create_dropdown(section, NULL, "采样率", "48000Hz\n"
+                                             "96000Hz\n"
+                                             "192000Hz",
+                    &dd);
+    section = lv_menu_section_create(sub_audio_page);
+    create_dropdown(section, NULL, "位深度", "16bit\n"
+                                             "24bit\n"
+                                             "32bit");
+    section = lv_menu_section_create(sub_audio_page);
+    create_dropdown(section, NULL, "通道数", "单通道\n"
+                                             "立体声",
+                    &dd);
+
+    section = lv_menu_section_create(sub_wireless_page);
+    create_dropdown(section, NULL, "传输协议", "BLE\n"
+                                               "UDP\n"
+                                               "TCP",
+                    &dd);
+
+    // lv_obj_align(dd, LV_ALIGN_TOP_MID, 0, 20);
+    // lv_obj_add_event_cb(dd, event_handler, LV_EVENT_ALL, NULL);
 
     // lv_obj_t *sub_mechanics_page = lv_menu_page_create(menu, NULL);
     // lv_obj_set_style_pad_hor(sub_mechanics_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(menu), 0), 0);
@@ -123,7 +163,7 @@ static void relink_bt_cb(lv_event_t *e)
 }
 
 static lv_obj_t *create_text(lv_obj_t *parent, const void *icon, const char *txt,
-                             lv_menu_builder_variant_t builder_variant)
+                             lv_menu_builder_variant_t builder_variant, std::optional<lv_obj_t **> label_o)
 {
     lv_obj_t *obj = lv_menu_cont_create(parent);
     lv_obj_t *img = NULL;
@@ -139,7 +179,7 @@ static lv_obj_t *create_text(lv_obj_t *parent, const void *icon, const char *txt
     {
         label = lv_label_create(obj);
         lv_label_set_text(label, txt);
-        lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+        // lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
         lv_obj_set_flex_grow(label, 1);
     }
 
@@ -159,9 +199,13 @@ static lv_obj_t *create_text(lv_obj_t *parent, const void *icon, const char *txt
     //     lv_obj_t* target = lv_event_get_target_obj(e);
     //     lv_obj_scroll_to_view(target, LV_ANIM_ON);
     // }, LV_EVENT_FOCUSED, NULL);
+    if (label_o.has_value())
+    {
+        *label_o.value() = label;
+    }
     return obj;
 }
-static lv_obj_t *create_slider(lv_obj_t *parent, const char *icon, const char *txt, int32_t min, int32_t max,
+static lv_obj_t *create_slider(lv_obj_t *parent, const void *icon, const char *txt, int32_t min, int32_t max,
                                int32_t val)
 {
     lv_obj_t *obj = create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_2);
@@ -178,13 +222,28 @@ static lv_obj_t *create_slider(lv_obj_t *parent, const char *icon, const char *t
 
     return obj;
 }
-static lv_obj_t *create_switch(lv_obj_t *parent, const char *icon, const char *txt, bool chk)
+static lv_obj_t *create_switch(lv_obj_t *parent, const void *icon, const char *txt, bool chk)
 {
     lv_obj_t *obj = create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_1);
 
     lv_obj_t *sw = lv_switch_create(obj);
     lv_obj_add_state(sw, chk ? LV_STATE_CHECKED : LV_STATE_DEFAULT);
 
+    return obj;
+}
+// 创建下拉列表， options: apple\nbanana...
+static lv_obj_t *create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, std::optional<lv_obj_t **> dd_o)
+{
+    lv_obj_t *label;
+    lv_obj_t *obj = create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_1, &label);
+    lv_obj_t *dd = lv_dropdown_create(obj);
+    lv_dropdown_set_options(dd, options);
+
+    lv_obj_add_flag(dd, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
+    if (dd_o.has_value())
+    {
+        *dd_o.value() = dd;
+    }
     return obj;
 }
 static lv_obj_t *create_sub_page(lv_obj_t *parent)
