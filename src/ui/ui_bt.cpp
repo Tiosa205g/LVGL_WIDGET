@@ -5,14 +5,11 @@
 static void main_widget_cb(lv_event_t *e); // 完成按钮回调 -> 主窗口
 static void link_cb(lv_event_t *e);        // 蓝牙连接按钮点击回调函数
 
-static bool is_del = true;
-
 void ui_bt_init()
 {
     lv_obj_t *btn;
     lv_obj_t *label;
     bt_widget = add_win();
-    is_del = false;
 
     g1 = lv_group_create(); // 外层group
     g2 = lv_group_create(); // 内层group list的内部按钮选项
@@ -102,7 +99,6 @@ static void link_cb(lv_event_t *e)
 static void main_widget_cb(lv_event_t *e)
 {
     ui_main_init();
-    is_del = true;
     lv_obj_delete(bt_widget);
 }
 
@@ -201,7 +197,7 @@ static void bt_list_update_event_cb(lv_event_t *e)
 // 添加蓝牙/更新蓝牙状态
 void update_bt(device_data *dev)
 {
-    if(!is_del)
+    if(bt_list && lv_obj_is_valid(bt_list))
         lv_obj_send_event(bt_list, EVENT_UPDATE, dev);
 }
 

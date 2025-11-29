@@ -7,8 +7,8 @@ static lv_obj_t *menu;
 static lv_obj_t *setting_widget;
 static lv_obj_t *last_enter_btn = NULL; // 记录进入子页面所用的条目
 
-static void back_cb(lv_event_t *e);      // 设置页面back按钮回调
-static void relink_bt_cb(lv_event_t *e); // 重新链接蓝牙回调
+static void back_cb(lv_event_t *e);          // 设置页面back按钮回调
+static void relink_bt_cb(lv_event_t *e);     // 重新链接蓝牙回调
 static void enter_subpage_cb(lv_event_t *e); // 记录进入子页的来源条目
 static void focus_async_cb(void *obj_p);     // 异步将焦点移回来源条目
 
@@ -253,10 +253,31 @@ static lv_obj_t *create_dropdown(lv_obj_t *parent, const void *icon, const char 
 {
     lv_obj_t *label;
     lv_obj_t *obj = create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_1, &label);
+
+    // 从焦点组中移除标签容器，使其无法被编码器选中
+    lv_group_remove_obj(obj);
+
     lv_obj_t *dd = lv_dropdown_create(obj);
     lv_dropdown_set_options(dd, options);
 
+    lv_obj_set_size(dd, 100, 20);
     lv_obj_add_flag(dd, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
+
+    // 给下拉菜单添加滚动到视图的标志
+    lv_obj_add_flag(dd, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
+
+    // 将下拉菜单添加到焦点组，使其可以被编码器选中
+    lv_group_add_obj(lv_group_get_default(), dd);
+
+    // 添加焦点事件处理，当下拉菜单获得焦点时，确保标签容器也滚动到可见区域
+    lv_obj_add_event_cb(dd, [](lv_event_t *e)
+                        {
+        lv_obj_t *dd = lv_event_get_target_obj(e);
+        lv_obj_t *container = lv_obj_get_parent(dd); // 获取标签容器
+        if (container && lv_obj_is_valid(container)) {
+            lv_obj_scroll_to_view_recursive(container, LV_ANIM_ON);
+        } }, LV_EVENT_FOCUSED, NULL);
+
     if (dd_o.has_value())
     {
         *dd_o.value() = dd;
@@ -285,6 +306,6 @@ static void focus_async_cb(void *obj_p)
     {
         lv_group_focus_obj(obj);
         lv_obj_scroll_to_view(obj, LV_ANIM_ON);
-        lv_obj_add_state(obj,LV_STATE_FOCUS_KEY); // 使返回焦点正常显示
+        lv_obj_add_state(obj, LV_STATE_FOCUS_KEY); // 使返回焦点正常显示
     }
 }
