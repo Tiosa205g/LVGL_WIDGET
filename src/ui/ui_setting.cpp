@@ -5,9 +5,12 @@
 
 static lv_obj_t *menu;
 static lv_obj_t *setting_widget;
+static lv_obj_t *last_enter_btn = NULL; // 记录进入子页面所用的条目
 
 static void back_cb(lv_event_t *e);      // 设置页面back按钮回调
 static void relink_bt_cb(lv_event_t *e); // 重新链接蓝牙回调
+static void enter_subpage_cb(lv_event_t *e); // 记录进入子页的来源条目
+static void focus_async_cb(void *obj_p);     // 异步将焦点移回来源条目
 
 static lv_obj_t *create_text(lv_obj_t *parent, const void *icon, const char *txt,
                              lv_menu_builder_variant_t builder_variant, std::optional<lv_obj_t **> label_o = std::nullopt);
@@ -114,6 +117,7 @@ void ui_setting_init()
     cont = create_text(section, LV_SYMBOL_AUDIO, "音频设置", LV_MENU_ITEM_BUILDER_VARIANT_1);
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_audio_page);
+    lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, NULL);
     section = lv_menu_section_create(root_page);
     cont = create_text(section, LV_SYMBOL_BLUETOOTH, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1); // finish
     lv_group_add_obj(lv_group_get_default(), cont);
@@ -123,19 +127,23 @@ void ui_setting_init()
     cont = create_text(section, LV_SYMBOL_WIFI, "无线传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 传输协议（BLE udp tcp）
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_wireless_page);
+    lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, NULL);
     section = lv_menu_section_create(root_page);
     cont = create_text(section, LV_SYMBOL_USB, "USB传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 模式（音频传输、读卡器）
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_usb_page);
+    lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, NULL);
     section = lv_menu_section_create(root_page);
     cont = create_text(section, &system_info, "系统信息", LV_MENU_ITEM_BUILDER_VARIANT_1);
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_system_page); // TODO: AWA  CPU核1、2占用 运行内存（IRAM PSRAM） tf储存
+    lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, NULL);
 
     section = lv_menu_section_create(root_page);
     cont = create_text(section, &about, "关于", LV_MENU_ITEM_BUILDER_VARIANT_1); // TODO: 大标题 固件版本 作者 链接
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_about_page);
+    lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, NULL);
 
     // lv_menu_set_sidebar_page(menu, root_page);
 
@@ -152,6 +160,15 @@ static void back_cb(lv_event_t *e)
     {
         set_hidden_main_widget(false);
         lv_obj_del(setting_widget);
+    }
+    else
+    {
+        // 返回到上一级（主页面），将焦点移回进入该子页的条目
+        if (last_enter_btn && lv_obj_is_valid(last_enter_btn))
+        {
+            // 异步执行，确保菜单已完成页面切换
+            lv_async_call(focus_async_cb, last_enter_btn);
+        }
     }
 }
 // 重新连接蓝牙点击
@@ -252,4 +269,22 @@ static lv_obj_t *create_sub_page(lv_obj_t *parent)
     lv_obj_set_style_pad_hor(sub_page, lv_obj_get_style_pad_left(lv_menu_get_main_header(parent), LV_PART_MAIN), 0);
     lv_menu_separator_create(sub_page);
     return sub_page;
+}
+
+// 记录进入子页的来源条目
+static void enter_subpage_cb(lv_event_t *e)
+{
+    last_enter_btn = lv_event_get_target_obj(e);
+}
+
+// 异步把焦点放回来源条目（并滚动可见）
+static void focus_async_cb(void *obj_p)
+{
+    lv_obj_t *obj = (lv_obj_t *)obj_p;
+    if (obj && lv_obj_is_valid(obj))
+    {
+        lv_group_focus_obj(obj);
+        lv_obj_scroll_to_view(obj, LV_ANIM_ON);
+        lv_obj_add_state(obj,LV_STATE_FOCUS_KEY); // 使返回焦点正常显示
+    }
 }
