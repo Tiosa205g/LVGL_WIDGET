@@ -8,16 +8,16 @@
  *********************/
 
 #ifndef _DEFAULT_SOURCE
-  #define _DEFAULT_SOURCE /* needed for usleep() */
+#define _DEFAULT_SOURCE /* needed for usleep() */
 #endif
 
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef _MSC_VER
-  #include <Windows.h>
+#include <Windows.h>
 #else
-  #include <unistd.h>
-  #include <pthread.h>
+#include <unistd.h>
+#include <pthread.h>
 #endif
 #include <SDL.h>
 
@@ -68,15 +68,18 @@ int main(int argc, char **argv)
   /* - lv_demo_stress(); */
   /* - lv_example_label_1(); */
   /* - etc. */
-  //lv_demo_widgets();
+  // lv_demo_widgets();
   ui_loading_init();
-  ui_loading_set_percent(100);
-  while(1) {
+  ui_loading_set_part("主界面");
+  // ui_loading_set_percent(100);
+  while (1)
+  {
     /* Periodically call the lv_task handler.
      * It could be done in a timer interrupt or an OS task too.*/
     uint32_t sleep_time_ms = lv_timer_handler();
-    if(sleep_time_ms == LV_NO_TIMER_READY){
-	sleep_time_ms =  LV_DEF_REFR_PERIOD;
+    if (sleep_time_ms == LV_NO_TIMER_READY)
+    {
+      sleep_time_ms = LV_DEF_REFR_PERIOD;
     }
 #ifdef _MSC_VER
     Sleep(sleep_time_ms);
@@ -87,7 +90,6 @@ int main(int argc, char **argv)
 
   return 0;
 }
-
 
 #endif
 
