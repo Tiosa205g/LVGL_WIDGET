@@ -156,9 +156,11 @@ static lv_obj_t *ui_create_device_card(lv_obj_t *parent, char *device_name, char
     label = lv_label_create(card);
     lv_label_set_text(label, "L");
     lv_obj_align(label, LV_ALIGN_CENTER, -40, -5);
+    lv_obj_set_style_text_font(label, &lv_font_harmonyos_12, 0);
     label = lv_label_create(card);
     lv_label_set_text(label, "R");
     lv_obj_align(label, LV_ALIGN_CENTER, -40, 15);
+    lv_obj_set_style_text_font(label, &lv_font_harmonyos_12, 0);
 
     lv_obj_t *left_bar_1 = lv_bar_create(card);
     lv_obj_add_style(left_bar_1, &style_indic_h, LV_PART_INDICATOR);
