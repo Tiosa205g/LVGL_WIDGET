@@ -6,8 +6,8 @@ typedef struct
 {
     lv_obj_t *left_voice_bar;
     lv_obj_t *right_voice_bar;
-    lv_obj_t *power_bar;
-    lv_obj_t *signal_bar;
+    lv_obj_t *power_label;
+    lv_obj_t *signal_label;
     char *device_name;
 
 } device_card_data;
