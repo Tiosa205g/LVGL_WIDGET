@@ -26,17 +26,20 @@
 #define DEVICE_DATA_REFLUSH_TIME 500
 // 最大蓝牙连接数
 #define MAX_DEVICE_COUNT 4
+#define CONFIG_VERSION_VALUE 0x0100
+#define CONFIG_VERSION_F CONFIG_VERSION_VALUE >> 8
+#define CONFIG_VERSION_S CONFIG_VERSION_VALUE & 0xff
 
 void ui_bt_init();
 void ui_main_init();
 void ui_setting_init();
 
 void ui_bind_group_to_all_encoders(lv_group_t *g);
-void ui_info_msgbox(std::string title, std::string content);
 
 lv_obj_t *ui_add_win();
 lv_obj_t *ui_add_button(lv_obj_t *parent, std::string title, int32_t w, int32_t h, const lv_font_t *font);
 lv_obj_t *ui_add_list_obj(lv_obj_t *list, std::string content, lv_event_cb_t cb, const lv_font_t *font, std::optional<lv_color_t> bg_color);
+lv_obj_t *ui_msgbox(const char *text);
 
 void ui_free_main_widget();
 void ui_set_hidden_main_widget(bool state);

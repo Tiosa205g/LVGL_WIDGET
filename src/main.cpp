@@ -71,7 +71,7 @@ int main(int argc, char **argv)
   // lv_demo_widgets();
   ui_loading_init();
   ui_loading_set_part("主界面");
-  ui_loading_set_percent(100);
+  // ui_loading_set_percent(100);
   while (1)
   {
     /* Periodically call the lv_task handler.

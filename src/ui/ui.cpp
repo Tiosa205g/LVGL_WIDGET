@@ -56,23 +56,52 @@ void ui_bind_group_to_all_encoders(lv_group_t *g)
     }
 }
 
-void ui_info_msgbox(std::string title, std::string content)
-{
-    lv_obj_t *btn;
-    lv_obj_t *mbox = lv_msgbox_create(NULL);
-    lv_obj_set_size(mbox, WIDGET_H / 2, WIDGET_V / 2);
-    lv_msgbox_add_title(mbox, title.c_str());
-    lv_msgbox_add_text(mbox, content.c_str());
-
-    btn = lv_msgbox_add_footer_button(mbox, "确定");
-
-    lv_group_add_obj(lv_group_get_default(), btn);
-    lv_obj_add_event_cb(btn, [](lv_event_t *e)
-                        {
-        lv_obj_t* mbox = (lv_obj_t*)lv_event_get_user_data(e);
-        lv_msgbox_close(mbox); }, LV_EVENT_CLICKED, mbox);
-}
 void ui_set_bar_val(void *bar, int32_t val)
 {
     lv_bar_set_value((lv_obj_t *)bar, val, LV_ANIM_ON);
+}
+
+lv_obj_t **ui_popwin()
+{
+    lv_obj_t *cont = lv_obj_create(lv_screen_active());
+    lv_obj_set_size(cont, lv_pct(100), lv_pct(100));
+    lv_obj_align(cont, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_user_data(cont, lv_group_get_default());
+    lv_obj_set_style_bg_opa(cont, LV_OPA_50, 0);
+    lv_obj_set_style_bg_color(cont, lv_color_black(), 0);
+    lv_obj_set_flag(cont, LV_OBJ_FLAG_CLICK_FOCUSABLE, true);
+    lv_obj_set_flag(cont, LV_OBJ_FLAG_SCROLLABLE, false);
+
+    lv_obj_t *win = lv_obj_create(cont);
+    lv_obj_set_style_pad_all(win, 0, 0);
+    lv_obj_set_size(win, lv_pct(80), lv_pct(90));
+    lv_obj_align(win, LV_ALIGN_CENTER, 0, 0);
+
+    lv_group_t *new_g = lv_group_create();
+    lv_group_add_obj(new_g, cont);
+    lv_group_set_default(new_g);
+    ui_bind_group_to_all_encoders(new_g);
+    lv_group_focus_obj(cont);
+
+    lv_obj_add_event_cb(cont, [](lv_event_t *e)
+                        {
+        lv_obj_t* target = lv_event_get_target_obj(e);
+        lv_group_t* raw_g = (lv_group_t *)lv_obj_get_user_data(target);
+        lv_group_set_default(raw_g);
+        ui_bind_group_to_all_encoders(raw_g);
+        lv_obj_del(target); }, LV_EVENT_CLICKED, NULL);
+    static lv_obj_t *ret[2];
+    ret[0] = cont;
+    ret[1] = win;
+    return ret;
+}
+
+lv_obj_t *ui_msgbox(const char *text)
+{
+    lv_obj_t **ret = ui_popwin();
+    lv_obj_t *label = lv_label_create(ret[1]);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
+    lv_label_set_text(label, text);
+
+    return ret[0];
 }
