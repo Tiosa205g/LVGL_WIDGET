@@ -1,7 +1,18 @@
 #include "ui/ui.h"
 #include <vector>
+#include <cstring>
+
 lv_obj_t *pop_win;
+
+typedef struct
+{
+    lv_group_t *g;
+    lv_obj_t *cont;
+    lv_obj_t *obj;
+} back_val;
+
 // 创建一个基础控件容器
+
 lv_obj_t *ui_add_win()
 {
     lv_obj_t *widget = lv_obj_create(lv_screen_active());
@@ -65,13 +76,12 @@ void ui_set_bar_val(void *bar, int32_t val)
     lv_bar_set_value((lv_obj_t *)bar, val, LV_ANIM_ON);
 }
 
-lv_obj_t **ui_popwin(bool has_bg)
+lv_obj_t **ui_popwin(bool has_bg, lv_group_t *g, lv_obj_t *obj)
 {
     lv_obj_t *cont = lv_obj_create(lv_screen_active());
     lv_obj_set_style_pad_all(cont, 0, 0);
     lv_obj_set_size(cont, lv_pct(100), lv_pct(100));
     lv_obj_align(cont, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_user_data(cont, lv_group_get_default());
     lv_obj_set_style_bg_opa(cont, LV_OPA_50, 0);
     lv_obj_set_style_bg_color(cont, lv_color_black(), 0);
     lv_obj_set_flag(cont, LV_OBJ_FLAG_CLICK_FOCUSABLE, true);
@@ -92,6 +102,15 @@ lv_obj_t **ui_popwin(bool has_bg)
         lv_obj_set_style_border_width(win, 0, 0);
     }
 
+    back_val *v = (back_val *)lv_malloc(sizeof(back_val));
+    if (g == nullptr)
+    {
+        g = lv_group_get_default();
+    }
+    v->g = g;
+    v->obj = obj;
+    lv_obj_set_user_data(cont, v);
+
     lv_group_t *new_g = lv_group_create();
     lv_group_add_obj(new_g, cont);
     // lv_group_set_default(new_g);
@@ -101,10 +120,12 @@ lv_obj_t **ui_popwin(bool has_bg)
     lv_obj_add_event_cb(cont, [](lv_event_t *e)
                         {
         lv_obj_t* target = lv_event_get_target_obj(e);
-        lv_group_t* raw_g = (lv_group_t *)lv_obj_get_user_data(target);
-        lv_group_set_default(raw_g);
-        ui_bind_group_to_all_encoders(raw_g);
-        lv_obj_del(target); }, LV_EVENT_CLICKED, NULL);
+        back_val* v = (back_val *)lv_obj_get_user_data(target);
+        lv_group_set_default(v->g);
+        ui_bind_group_to_all_encoders(v->g);
+        if(lv_obj_is_valid(v->obj)) lv_group_focus_obj(v->obj);
+        lv_obj_del(target);
+        lv_free(v); }, LV_EVENT_CLICKED, NULL);
     static lv_obj_t *ret[2];
     ret[0] = cont;
     ret[1] = win;
@@ -112,9 +133,9 @@ lv_obj_t **ui_popwin(bool has_bg)
     return ret;
 }
 
-lv_obj_t *ui_popwin_msgbox(const char *text)
+lv_obj_t *ui_popwin_msgbox(const char *text, lv_group_t *g, lv_obj_t *obj)
 {
-    lv_obj_t **ret = ui_popwin();
+    lv_obj_t **ret = ui_popwin(true, g, obj);
     lv_obj_t *label = lv_label_create(ret[1]);
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
     lv_label_set_text(label, text);
@@ -122,9 +143,9 @@ lv_obj_t *ui_popwin_msgbox(const char *text)
     return ret[0];
 }
 
-lv_obj_t *ui_popwin_load(const char *text, const void *src, size_t src_size, int32_t time, int32_t w, int32_t h)
+lv_obj_t *ui_popwin_load(const char *text, const void *src, size_t src_size, int32_t time, int32_t w, int32_t h, lv_group_t *g, lv_obj_t *obj)
 {
-    lv_obj_t **ret = ui_popwin(false);
+    lv_obj_t **ret = ui_popwin(false, g, obj);
 
     lv_obj_t *lottie = ui_lottie_create(ret[0], src, src_size, time, w, h);
 
@@ -144,19 +165,34 @@ lv_obj_t *ui_popwin_load(const char *text, const void *src, size_t src_size, int
     lv_anim_start(&anim);
     return ret[0];
 }
-lv_obj_t *ui_popwin_finish(const char *text, const void *src, size_t src_size, int32_t time, int32_t w, int32_t h)
+lv_obj_t *ui_popwin_finish(const char *text, const void *src, size_t src_size, int32_t time, int32_t w, int32_t h, lv_group_t *g, lv_obj_t *obj)
 {
-    lv_obj_t **ret = ui_popwin(false);
+    lv_obj_t **ret = ui_popwin(false, g, obj);
 
     lv_obj_t *lottie = ui_lottie_create(ret[0], src, src_size, time, w, h);
-    lv_obj_set_user_data(lottie, ret[0]);
+    // lv_obj_set_user_data(lottie, ret[0]);
+
+    back_val *v = (back_val *)lv_malloc(sizeof(back_val));
+    if (g == nullptr)
+    {
+        g = lv_group_get_default();
+    }
+    v->cont = ret[0];
+    v->g = g;
+    v->obj = obj;
+
     lv_anim_t *a = lv_lottie_get_anim(lottie);
+    lv_obj_set_user_data(lottie, v);
     lv_anim_set_repeat_count(a, 0);
     lv_anim_set_completed_cb(a, [](_lv_anim_t *a)
                              {
         lv_obj_t * target = (lv_obj_t *)a->var;
-        lv_obj_t * cont = (lv_obj_t *) lv_obj_get_user_data(target);
-        if(lv_obj_is_valid(cont)) lv_obj_delete(cont); });
+        back_val * v = (back_val *) lv_obj_get_user_data(target);
+        if(lv_obj_is_valid(v->cont)) lv_obj_delete(v->cont);
+        lv_group_set_default(v->g);
+        ui_bind_group_to_all_encoders(v->g);
+        if(lv_obj_is_valid(v->obj)) lv_group_focus_obj(v->obj);
+        lv_free(v); });
 
     lv_obj_t *label = lv_label_create(ret[0]);
     lv_label_set_text(label, text);
@@ -178,11 +214,20 @@ lv_obj_t *ui_lottie_create(lv_obj_t *parent, const void *src, size_t src_size, i
 {
     lv_obj_t *lottie = lv_lottie_create(parent);
     lv_lottie_set_src_data(lottie, src, src_size);
-    static std::vector<uint8_t> s_buf;
-    s_buf.resize(static_cast<size_t>(w) * static_cast<size_t>(h) * 4);
-    lv_lottie_set_buffer(lottie, w, h, s_buf.data());
+    size_t buf_size = static_cast<size_t>(w) * static_cast<size_t>(h) * 4;
+    uint8_t *buf = static_cast<uint8_t *>(lv_malloc(buf_size));
+    if (buf)
+    {
+        std::memset(buf, 0, buf_size);
+        lv_lottie_set_buffer(lottie, w, h, buf);
+        // 释放缓冲区：绑定到删除事件
+        lv_obj_add_event_cb(lottie, [](lv_event_t *e)
+                            {
+                                uint8_t *p = static_cast<uint8_t *>(lv_event_get_user_data(e));
+                                if (p) lv_free(p); }, LV_EVENT_DELETE, buf);
+    }
     lv_obj_center(lottie);
     lv_anim_t *a = lv_lottie_get_anim(lottie);
-    lv_anim_set_time(a, 3000);
+    lv_anim_set_time(a, time);
     return lottie;
 }
