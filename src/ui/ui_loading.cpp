@@ -69,7 +69,7 @@ void ui_loading_init()
 
     label = lv_label_create(loading_widget);
     lv_label_set_recolor(label, true);
-    lv_label_set_text_fmt(label, "#626367 v:%d.%d#", CONFIG_VERSION_F, CONFIG_VERSION_S);
+    lv_label_set_text_fmt(label, "#626367 版本:%d.%d#", CONFIG_VERSION_F, CONFIG_VERSION_S);
     lv_obj_set_style_text_font(label, &lv_font_harmonyos_14, 0);
     lv_obj_align_to(label, img, LV_ALIGN_OUT_RIGHT_MID, 15, 10);
 
@@ -86,5 +86,9 @@ void ui_loading_init()
 
     lv_timer_create(loding_timer_cb, 1, NULL); // 设置加载速率
     LV_LOG_INFO("timer已创建");
-    ui_msgbox("awa");
+    // ui_popwin_load("正在连接中...");
+    // ui_popwin_load("正在连接蓝牙...", Bluetooth_connect_json, Bluetooth_connect_json_len, 1000, 64, 64);
+    // ui_popwin_finish("连接成功.", Bluetooth_finish_json, Bluetooth_finish_json_len, 1000, 64, 64);
+    // ui_popwin_finish("连接失败!", fail_json, fail_json_len, 1000, 48, 48);
+    // ui_popwin_msgbox("awa");
 }

@@ -1,5 +1,6 @@
 #include "ui/ui.h"
-
+#include <vector>
+lv_obj_t *pop_win;
 // 创建一个基础控件容器
 lv_obj_t *ui_add_win()
 {
@@ -55,15 +56,19 @@ void ui_bind_group_to_all_encoders(lv_group_t *g)
         }
     }
 }
-
+void ui_set_opa(void *obj, int32_t val)
+{
+    lv_obj_set_style_opa((lv_obj_t *)obj, val, 0);
+}
 void ui_set_bar_val(void *bar, int32_t val)
 {
     lv_bar_set_value((lv_obj_t *)bar, val, LV_ANIM_ON);
 }
 
-lv_obj_t **ui_popwin()
+lv_obj_t **ui_popwin(bool has_bg)
 {
     lv_obj_t *cont = lv_obj_create(lv_screen_active());
+    lv_obj_set_style_pad_all(cont, 0, 0);
     lv_obj_set_size(cont, lv_pct(100), lv_pct(100));
     lv_obj_align(cont, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_user_data(cont, lv_group_get_default());
@@ -72,14 +77,24 @@ lv_obj_t **ui_popwin()
     lv_obj_set_flag(cont, LV_OBJ_FLAG_CLICK_FOCUSABLE, true);
     lv_obj_set_flag(cont, LV_OBJ_FLAG_SCROLLABLE, false);
 
+    if (lv_obj_is_valid(pop_win))
+        lv_obj_del(pop_win);
+    pop_win = cont;
+
     lv_obj_t *win = lv_obj_create(cont);
     lv_obj_set_style_pad_all(win, 0, 0);
-    lv_obj_set_size(win, lv_pct(80), lv_pct(90));
+    lv_obj_set_size(win, lv_pct(60), lv_pct(67));
     lv_obj_align(win, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_flag(win, LV_OBJ_FLAG_SCROLLABLE, false);
+    if (!has_bg)
+    {
+        lv_obj_set_style_bg_opa(win, 0, 0);
+        lv_obj_set_style_border_width(win, 0, 0);
+    }
 
     lv_group_t *new_g = lv_group_create();
     lv_group_add_obj(new_g, cont);
-    lv_group_set_default(new_g);
+    // lv_group_set_default(new_g);
     ui_bind_group_to_all_encoders(new_g);
     lv_group_focus_obj(cont);
 
@@ -93,10 +108,11 @@ lv_obj_t **ui_popwin()
     static lv_obj_t *ret[2];
     ret[0] = cont;
     ret[1] = win;
+
     return ret;
 }
 
-lv_obj_t *ui_msgbox(const char *text)
+lv_obj_t *ui_popwin_msgbox(const char *text)
 {
     lv_obj_t **ret = ui_popwin();
     lv_obj_t *label = lv_label_create(ret[1]);
@@ -104,4 +120,69 @@ lv_obj_t *ui_msgbox(const char *text)
     lv_label_set_text(label, text);
 
     return ret[0];
+}
+
+lv_obj_t *ui_popwin_load(const char *text, const void *src, size_t src_size, int32_t time, int32_t w, int32_t h)
+{
+    lv_obj_t **ret = ui_popwin(false);
+
+    lv_obj_t *lottie = ui_lottie_create(ret[0], src, src_size, time, w, h);
+
+    lv_obj_t *label = lv_label_create(ret[0]);
+    lv_label_set_text(label, text);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, 0);
+    // lv_obj_set_style_text_color(label, lv_color_hex(0x626367), 0);
+
+    lv_anim_t anim;
+
+    lv_anim_init(&anim);
+    lv_anim_set_var(&anim, label);                          // 设置动画对象
+    lv_anim_set_exec_cb(&anim, ui_set_opa);                 // 设置执行函数，用于改变透明度
+    lv_anim_set_values(&anim, LV_OPA_COVER, LV_OPA_TRANSP); // 设置透明度从0到255（LV_OPA_TRANSP=0, LV_OPA_COVER=255）
+    lv_anim_set_time(&anim, 4000);
+    lv_anim_set_delay(&anim, 0);
+    lv_anim_start(&anim);
+    return ret[0];
+}
+lv_obj_t *ui_popwin_finish(const char *text, const void *src, size_t src_size, int32_t time, int32_t w, int32_t h)
+{
+    lv_obj_t **ret = ui_popwin(false);
+
+    lv_obj_t *lottie = ui_lottie_create(ret[0], src, src_size, time, w, h);
+    lv_obj_set_user_data(lottie, ret[0]);
+    lv_anim_t *a = lv_lottie_get_anim(lottie);
+    lv_anim_set_repeat_count(a, 0);
+    lv_anim_set_completed_cb(a, [](_lv_anim_t *a)
+                             {
+        lv_obj_t * target = (lv_obj_t *)a->var;
+        lv_obj_t * cont = (lv_obj_t *) lv_obj_get_user_data(target);
+        if(lv_obj_is_valid(cont)) lv_obj_delete(cont); });
+
+    lv_obj_t *label = lv_label_create(ret[0]);
+    lv_label_set_text(label, text);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, 0);
+    // lv_obj_set_style_text_color(label, lv_color_hex(0x626367), 0);
+
+    lv_anim_t anim;
+
+    lv_anim_init(&anim);
+    lv_anim_set_var(&anim, label);                          // 设置动画对象
+    lv_anim_set_exec_cb(&anim, ui_set_opa);                 // 设置执行函数，用于改变透明度
+    lv_anim_set_values(&anim, LV_OPA_COVER, LV_OPA_TRANSP); // 设置透明度从0到255（LV_OPA_TRANSP=0, LV_OPA_COVER=255）
+    lv_anim_set_time(&anim, 4000);
+    lv_anim_set_delay(&anim, 0);
+    lv_anim_start(&anim);
+    return ret[0];
+}
+lv_obj_t *ui_lottie_create(lv_obj_t *parent, const void *src, size_t src_size, int32_t time, int32_t w, int32_t h)
+{
+    lv_obj_t *lottie = lv_lottie_create(parent);
+    lv_lottie_set_src_data(lottie, src, src_size);
+    static std::vector<uint8_t> s_buf;
+    s_buf.resize(static_cast<size_t>(w) * static_cast<size_t>(h) * 4);
+    lv_lottie_set_buffer(lottie, w, h, s_buf.data());
+    lv_obj_center(lottie);
+    lv_anim_t *a = lv_lottie_get_anim(lottie);
+    lv_anim_set_time(a, 3000);
+    return lottie;
 }

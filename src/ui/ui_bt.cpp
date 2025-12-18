@@ -127,14 +127,38 @@ static void list_event_handler(lv_event_t *e)
                 bool ret = ui_bt_unlink(bt_name);
                 LV_LOG_USER("断开连接");
                 if (!ret)
+                {
                     lv_obj_add_state(obj, LV_STATE_CHECKED);
+                    ui_popwin_msgbox("断开失败");
+                }
                 else
+                {
                     lv_obj_set_style_bg_color(obj, COLOR_SELECTED, LV_STATE_CHECKED);
-                lv_obj_set_user_data(obj, BT_UNLINKED);
-                lv_obj_remove_state(obj, LV_STATE_CHECKED);
+                    ui_popwin_msgbox("已断开");
+                    lv_obj_set_user_data(obj, BT_UNLINKED);
+                    lv_obj_remove_state(obj, LV_STATE_CHECKED);
+                }
             }
         }
-        lv_obj_remove_state(obj, (lv_state_t)(current_state & ~LV_STATE_CHECKED));
+        else // 之前为未选中
+        {
+            lv_obj_remove_state(obj, (lv_state_t)(current_state & ~LV_STATE_CHECKED));
+            uint8_t n = 0;
+            int32_t cnt = lv_obj_get_child_count_by_type(list, &lv_list_button_class);
+            for (int i = 0; i < cnt; i++)
+            {
+                lv_obj_t *btn = lv_obj_get_child_by_type(list, i, &lv_list_button_class);
+                if (lv_color_eq(lv_obj_get_style_bg_color(btn, LV_PART_MAIN), COLOR_SELECTED)) // 选中
+                    n++;
+            }
+            if (n > 1)
+            {
+                lv_obj_set_style_bg_color(obj, COLOR_SELECTED, LV_STATE_CHECKED);
+                lv_obj_remove_state(obj, LV_STATE_CHECKED);
+                ui_popwin_msgbox("一次只能选择一个");
+            }
+        }
+
         lv_obj_clear_flag(list, LV_OBJ_FLAG_SCROLLABLE);
         ui_bind_group_to_all_encoders(g1); // 外层group
         lv_group_focus_obj(list);          // 重置焦点
