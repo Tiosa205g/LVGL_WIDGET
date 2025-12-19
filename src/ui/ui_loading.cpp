@@ -58,7 +58,7 @@ void ui_loading_init()
     lv_obj_set_style_bg_opa(loading_widget, LV_OPA_90, LV_PART_MAIN);
 
     lv_obj_t *img = lv_img_create(loading_widget);
-    lv_img_set_src(img, &microphone);
+    lv_img_set_src(img, &ui_img_microphone);
     lv_img_set_zoom(img, 64);
     lv_obj_set_size(img, 32, 32);
     lv_obj_align(img, LV_ALIGN_TOP_MID, -45, 0);
@@ -88,8 +88,8 @@ void ui_loading_init()
     lv_timer_create(loding_timer_cb, 1, NULL); // 设置加载速率
     LV_LOG_INFO("timer已创建");
     // ui_popwin_load("正在连接中...");
-    // ui_popwin_load("正在连接蓝牙...", Bluetooth_connect_json, Bluetooth_connect_json_len, 1000, 64, 64);
-    // ui_popwin_finish("连接成功.", Bluetooth_finish_json, Bluetooth_finish_json_len, 1000, 64, 64);
-    // ui_popwin_finish("连接失败!", fail_json, fail_json_len, 1000, 48, 48);
+    // ui_popwin_load("正在连接蓝牙...", ui_lottie_Bluetooth_connect_json, ui_lottie_Bluetooth_connect_json_len, 1000, 64, 64);
+    // ui_popwin_finish("连接成功.", ui_lottie_Bluetooth_finish_json, ui_lottie_Bluetooth_finish_json_len, 1000, 64, 64);
+    // ui_popwin_finish("连接失败!", ui_lottie_fail_json, ui_lottie_fail_json_len, 1000, 48, 48);
     // ui_popwin_msgbox("awa");
 }

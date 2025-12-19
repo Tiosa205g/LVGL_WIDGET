@@ -100,7 +100,7 @@ void ui_main_init()
     // lv_obj_t* img;
     // img = lv_img_create(main_widget);
     // lv_obj_set_size(img,16,16);
-    // lv_img_set_src(img,&usb);
+    // lv_img_set_src(img,&ui_img_usb);
     // lv_obj_align_to(img,label_widget,LV_ALIGN_OUT_TOP_LEFT,1,0);
     // last = img;
 
