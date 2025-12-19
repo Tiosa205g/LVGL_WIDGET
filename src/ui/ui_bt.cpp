@@ -83,7 +83,7 @@ static void link_cb(lv_event_t *e)
     uint8_t n = ui_list_get_select_num();
     if (n == 0)
     {
-        ui_popwin_msgbox("请先选择要连接的设备", g1, bt_list);
+        ui_popwin_msgbox("请先选择\n要连接的设备", g1, bt_list);
         return;
     }
     ui_popwin_load("正在连接蓝牙...", Bluetooth_connect_json, Bluetooth_connect_json_len, 1000, 64, 64, g1, bt_list);
@@ -163,7 +163,7 @@ static void list_event_handler(lv_event_t *e)
             {
                 lv_obj_set_style_bg_color(obj, COLOR_SELECTED, LV_STATE_CHECKED);
                 lv_obj_remove_state(obj, LV_STATE_CHECKED);
-                ui_popwin_msgbox("一次只能选择一个", g1, bt_list);
+                ui_popwin_msgbox("一次只能\n选择一个", g1, bt_list);
             }
             else
             {

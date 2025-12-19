@@ -2,7 +2,7 @@
 #include <vector>
 #include <cstring>
 
-lv_obj_t *pop_win;
+lv_obj_t *pop_win = nullptr; // 当前弹窗容器
 
 typedef struct
 {
@@ -87,9 +87,21 @@ lv_obj_t **ui_popwin(bool has_bg, lv_group_t *g, lv_obj_t *obj)
     lv_obj_set_flag(cont, LV_OBJ_FLAG_CLICK_FOCUSABLE, true);
     lv_obj_set_flag(cont, LV_OBJ_FLAG_SCROLLABLE, false);
 
+    // 若存在旧弹窗先删除
     if (lv_obj_is_valid(pop_win))
+    {
         lv_obj_del(pop_win);
+        pop_win = nullptr;
+    }
     pop_win = cont;
+
+    // 弹窗生命周期结束时清理全局指针，避免悬空引用
+    lv_obj_add_event_cb(cont, [](lv_event_t *e)
+                        {
+        if(lv_event_get_code(e) == LV_EVENT_DELETE)
+        {
+            if (pop_win == lv_event_get_target_obj(e)) pop_win = nullptr;
+        } }, LV_EVENT_DELETE, NULL);
 
     lv_obj_t *win = lv_obj_create(cont);
     lv_obj_set_style_pad_all(win, 0, 0);
@@ -124,7 +136,8 @@ lv_obj_t **ui_popwin(bool has_bg, lv_group_t *g, lv_obj_t *obj)
         lv_group_set_default(v->g);
         ui_bind_group_to_all_encoders(v->g);
         if(lv_obj_is_valid(v->obj)) lv_group_focus_obj(v->obj);
-        lv_obj_del(target);
+        if (lv_obj_is_valid(target)) lv_obj_del(target);
+        if (pop_win == target) pop_win = nullptr;
         lv_free(v); }, LV_EVENT_CLICKED, NULL);
     static lv_obj_t *ret[2];
     ret[0] = cont;
@@ -188,7 +201,10 @@ lv_obj_t *ui_popwin_finish(const char *text, const void *src, size_t src_size, i
                              {
         lv_obj_t * target = (lv_obj_t *)a->var;
         back_val * v = (back_val *) lv_obj_get_user_data(target);
-        if(lv_obj_is_valid(v->cont)) lv_obj_delete(v->cont);
+        if(lv_obj_is_valid(v->cont)) {
+            if (pop_win == v->cont) pop_win = nullptr;
+            lv_obj_del(v->cont);
+        }
         lv_group_set_default(v->g);
         ui_bind_group_to_all_encoders(v->g);
         if(lv_obj_is_valid(v->obj)) lv_group_focus_obj(v->obj);
