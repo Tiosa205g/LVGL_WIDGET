@@ -18,9 +18,8 @@ static void back_btn_focus_cb(lv_event_t *e); // 返回按钮焦点事件回调
 
 static lv_obj_t *ui_create_text(lv_obj_t *parent, const void *icon, const char *txt,
                                 lv_menu_builder_variant_t builder_variant, std::optional<lv_obj_t **> label_o = std::nullopt, std::optional<bool> is_from_svg = std::nullopt);
-static lv_obj_t *ui_create_slider(lv_obj_t *parent, const char *icon, const char *txt, int32_t min, int32_t max,
+static lv_obj_t *ui_create_slider(lv_obj_t *parent, const void *icon, const char *txt, int32_t min, int32_t max,
                                   int32_t val);
-static lv_obj_t *ui_create_switch(lv_obj_t *parent, const char *icon, const char *txt, bool chk);
 static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, std::optional<lv_obj_t **> dd_o = std::nullopt);
 static lv_obj_t *ui_create_sub_page(lv_obj_t *parent, const char *title, bool display_scroll = true); // 新建子页面
 static void scroll_event_cb(lv_event_t *e);
@@ -154,8 +153,11 @@ void ui_setting_init()
     ui_create_text(sub_system_page, NULL, "外置存储", LV_MENU_ITEM_BUILDER_VARIANT_1);
 
     // section = lv_menu_section_create(sub_usb_page);
-    ui_create_dropdown(sub_usb_page, NULL, "传输模式", "音频传输\n"
-                                                       "读卡器",
+    ui_create_dropdown(sub_usb_page, NULL, "传输模式", "默认"
+                                                       "音频\n"
+                                                       "读卡器\n"
+                                                       "JTAG",
+
                        &dd);
 
     // 音频 频率 比特 通道 下拉菜单
@@ -175,11 +177,14 @@ void ui_setting_init()
     ui_create_dropdown(sub_audio_page, NULL, "通道数", "单通道\n"
                                                        "立体声",
                        &dd);
-
+    ui_create_dropdown(sub_audio_page, NULL, "增益模式", "自动增益\n"
+                                                         "峰值减少\n"
+                                                         "手动",
+                       &dd);
+    ui_create_slider(sub_audio_page, NULL, "增益", 0, 60, 0);
     // section = lv_menu_section_create(sub_wireless_page);
     ui_create_dropdown(sub_wireless_page, NULL, "传输协议", "BLE\n"
-                                                            "UDP\n"
-                                                            "TCP",
+                                                            "UDP",
                        &dd);
 
     // lv_obj_align(dd, LV_ALIGN_TOP_MID, 0, 20);
@@ -356,23 +361,6 @@ static lv_obj_t *ui_create_text(lv_obj_t *parent, const void *icon, const char *
     }
     return obj;
 }
-static lv_obj_t *create_slider(lv_obj_t *parent, const void *icon, const char *txt, int32_t min, int32_t max,
-                               int32_t val)
-{
-    lv_obj_t *obj = ui_create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_2);
-
-    lv_obj_t *slider = lv_slider_create(obj);
-    lv_obj_set_flex_grow(slider, 1);
-    lv_slider_set_range(slider, min, max);
-    lv_slider_set_value(slider, val, LV_ANIM_OFF);
-
-    if (icon == NULL)
-    {
-        lv_obj_add_flag(slider, LV_OBJ_FLAG_FLEX_IN_NEW_TRACK);
-    }
-
-    return obj;
-}
 static lv_obj_t *ui_create_switch(lv_obj_t *parent, const void *icon, const char *txt, bool chk)
 {
     lv_obj_t *obj = ui_create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_1);
@@ -399,6 +387,15 @@ static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const ch
 
     lv_group_add_obj(lv_group_get_default(), dd);
 
+    lv_obj_t *list = lv_dropdown_get_list(dd);
+    for (int i = 0; i < lv_obj_get_child_count_by_type(list, &lv_button_class); i++)
+    {
+        lv_obj_t *child = lv_obj_get_child_by_type(list, i, &lv_button_class);
+        lv_obj_add_event_cb(child, [](lv_event_t *e)
+                            {
+            lv_obj_t* target = (lv_obj_t*)lv_event_get_target_obj(e);
+            lv_obj_scroll_to_view_recursive(target,LV_ANIM_ON); }, LV_EVENT_FOCUSED, NULL);
+    }
     lv_obj_add_event_cb(dd, [](lv_event_t *e)
                         {
         lv_obj_t *dd = lv_event_get_target_obj(e);
@@ -562,4 +559,35 @@ static void scroll_event_cb(lv_event_t *e)
             lv_obj_set_style_opa(child, LV_OPA_COVER - opa, 0);
         }
     }
+}
+
+static lv_obj_t *ui_create_slider(lv_obj_t *parent, const void *icon, const char *txt, int32_t min, int32_t max,
+                                  int32_t val)
+{
+    lv_obj_t *title;
+    lv_obj_t *obj = ui_create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_1, &title);
+    lv_group_remove_obj(obj);
+    lv_obj_t *slider = lv_slider_create(obj);
+    lv_obj_set_style_pad_all(slider, 0, LV_PART_KNOB);
+    lv_obj_align_to(slider, title, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+    lv_obj_set_size(slider, lv_pct(73), 20);
+    lv_slider_set_range(slider, min, max);
+    lv_slider_set_value(slider, val, LV_ANIM_OFF);
+
+    lv_obj_t *pct = lv_label_create(slider);
+    lv_label_set_text_fmt(pct, "%d%%", 0);
+    lv_obj_set_style_text_color(pct, lv_color_hex(0x333333), 0);
+    lv_obj_align(pct, LV_ALIGN_CENTER, 0, 0);
+
+    lv_obj_add_event_cb(slider, [](lv_event_t *e)
+                        {
+        lv_obj_t * slider = (lv_obj_t*)lv_event_get_target(e);
+        lv_obj_t* pct = (lv_obj_t*) lv_event_get_user_data(e);
+        lv_label_set_text_fmt(pct,"%d",lv_slider_get_value(slider)); }, LV_EVENT_VALUE_CHANGED, pct);
+    lv_obj_add_event_cb(slider, [](lv_event_t *e)
+                        {
+        lv_obj_t* target = lv_event_get_target_obj(e);
+        lv_obj_t* parent = lv_obj_get_parent(target);
+        lv_obj_scroll_to_view_recursive(parent,LV_ANIM_ON); }, LV_EVENT_FOCUSED, NULL);
+    return obj;
 }

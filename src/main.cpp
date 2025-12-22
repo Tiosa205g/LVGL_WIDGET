@@ -69,6 +69,8 @@ int main(int argc, char **argv)
   /* - lv_example_label_1(); */
   /* - etc. */
   // lv_demo_widgets();
+  // lv_obj_set_style_text_font(lv_screen_active(), &lv_font_montserrat_12, 0);
+  lv_obj_set_style_pad_all(lv_screen_active(), 0, 0);
   ui_loading_init();
   ui_loading_set_part("主界面");
   ui_loading_set_percent(100);
