@@ -82,7 +82,7 @@ void ui_main_init()
 
     download_label = lv_label_create(label_widget);
     lv_label_set_recolor(download_label, true);
-    lv_label_set_text_fmt(download_label, "#000000 %s#%.1fb/s", LV_SYMBOL_DOWNLOAD, 1.1);
+    lv_label_set_text_fmt(download_label, "#333333 %s#%.1fb/s", LV_SYMBOL_DOWNLOAD, 1.1);
     lv_obj_set_style_text_font(download_label, &lv_font_harmonyos_12, 0);
     lv_obj_align(download_label, LV_ALIGN_CENTER, 0, 0);
 

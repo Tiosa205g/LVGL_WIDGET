@@ -184,7 +184,7 @@ void ui_setting_init()
     ui_create_slider(sub_audio_page, NULL, "增益", 0, 60, 0);
     // section = lv_menu_section_create(sub_wireless_page);
     ui_create_dropdown(sub_wireless_page, NULL, "传输协议", "BLE\n"
-                                                            "UDP",
+                                                            "WIFI",
                        &dd);
 
     // lv_obj_align(dd, LV_ALIGN_TOP_MID, 0, 20);
