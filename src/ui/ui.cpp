@@ -164,11 +164,6 @@ lv_obj_t *ui_popwin_msgbox(const char *text, lv_group_t *g, lv_obj_t *obj, const
     }
 
     // 标题
-    if (!title)
-    {
-        title = "提示：";
-    }
-
     label = lv_label_create(ret[1]);
     lv_label_set_text(label, title);
     lv_obj_set_style_text_font(label, &lv_font_harmonyos_12, 0);
@@ -186,7 +181,7 @@ lv_obj_t *ui_popwin_msgbox(const char *text, lv_group_t *g, lv_obj_t *obj, const
     line = lv_line_create(ret[1]);
     lv_line_set_points(line, line_points, 2);
     lv_obj_add_style(line, &style_line, 0);
-    lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 16);
+    lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 17);
 
     // content
     label = lv_label_create(ret[1]);

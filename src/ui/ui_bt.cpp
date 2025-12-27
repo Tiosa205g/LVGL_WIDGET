@@ -83,7 +83,7 @@ static void link_cb(lv_event_t *e)
     uint8_t n = ui_list_get_select_num();
     if (n == 0)
     {
-        ui_popwin_msgbox("请先选择要连接的设备", g1, bt_list, LV_SYMBOL_BLUETOOTH, "awa", false, "确定", [](lv_event_t *e) {}, "否", [](lv_event_t *e) {});
+        ui_popwin_msgbox("请先选择要连接的设备", g1, bt_list, &ui_img_tips, "提示:", false, "确定");
         return;
     }
     ui_popwin_msgbox("正在连接蓝牙...", g1, bt_list);

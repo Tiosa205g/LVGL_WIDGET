@@ -1,7 +1,6 @@
 #include "ui/ui.h"
 #include "ui/ui_setting.h"
 #include <string>
-#include <optional>
 
 static lv_obj_t *menu;
 static lv_obj_t *setting_widget;
@@ -17,10 +16,10 @@ static void focus_async_cb(void *obj_p);      // 异步将焦点移回来源条�
 static void back_btn_focus_cb(lv_event_t *e); // 返回按钮焦点事件回调
 
 static lv_obj_t *ui_create_text(lv_obj_t *parent, const void *icon, const char *txt,
-                                lv_menu_builder_variant_t builder_variant, std::optional<lv_obj_t **> label_o = std::nullopt, std::optional<bool> is_from_svg = std::nullopt);
+                                lv_menu_builder_variant_t builder_variant, lv_obj_t **label_o = nullptr, bool is_from_svg = false);
 static lv_obj_t *ui_create_slider(lv_obj_t *parent, const void *icon, const char *txt, int32_t min, int32_t max,
                                   int32_t val);
-static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, std::optional<lv_obj_t **> dd_o = std::nullopt);
+static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, lv_obj_t **dd_o = nullptr);
 static lv_obj_t *ui_create_sub_page(lv_obj_t *parent, const char *title, bool display_scroll = true); // 新建子页面
 static void scroll_event_cb(lv_event_t *e);
 void ui_setting_init()
@@ -209,7 +208,7 @@ void ui_setting_init()
     // lv_menu_set_load_page_event(menu, cont, sub_mechanics_page);
     // section = lv_menu_section_create(root_page);
 
-    cont = ui_create_text(root_page, &ui_img_audio, "音频设置", LV_MENU_ITEM_BUILDER_VARIANT_1, std::nullopt, true);
+    cont = ui_create_text(root_page, &ui_img_audio, "音频设置", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true);
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_audio_page);
     lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, sub_audio_page);
@@ -219,7 +218,7 @@ void ui_setting_init()
     lv_obj_set_user_data(cont, (void *)0); // 标记未播放动画
 
     // section = lv_menu_section_create(root_page);
-    cont = ui_create_text(root_page, &ui_img_bt, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1, std::nullopt, true); // finish
+    cont = ui_create_text(root_page, &ui_img_bt, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true); // finish
     lv_group_add_obj(lv_group_get_default(), cont);
     // lv_menu_set_load_page_event(menu, cont, sub_bt_page);
     lv_obj_add_event_cb(cont, relink_bt_cb, LV_EVENT_CLICKED, NULL);
@@ -228,7 +227,7 @@ void ui_setting_init()
     lv_obj_set_user_data(cont, (void *)0);
 
     // section = lv_menu_section_create(root_page);
-    cont = ui_create_text(root_page, &ui_img_wifi, "无线传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1, std::nullopt, true); // TODO: 传输协议（BLE udp tcp）
+    cont = ui_create_text(root_page, &ui_img_wifi, "无线传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true); // TODO: 传输协议（BLE udp tcp）
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_wireless_page);
     lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, sub_wireless_page);
@@ -246,7 +245,7 @@ void ui_setting_init()
     lv_obj_set_user_data(cont, (void *)0);
 
     // section = lv_menu_section_create(root_page);
-    cont = ui_create_text(root_page, &ui_img_system_info, "系统信息", LV_MENU_ITEM_BUILDER_VARIANT_1, std::nullopt, true);
+    cont = ui_create_text(root_page, &ui_img_system_info, "系统信息", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true);
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_system_page); // TODO: AWA  CPU核1、2占用 运行内存（IRAM PSRAM） tf储存
     lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, sub_system_page);
@@ -255,7 +254,7 @@ void ui_setting_init()
     lv_obj_set_user_data(cont, (void *)0);
 
     // section = lv_menu_section_create(root_page);
-    cont = ui_create_text(root_page, &ui_img_about, "关于", LV_MENU_ITEM_BUILDER_VARIANT_1, std::nullopt, true); // TODO: 大标题 固件版本 作者 链接
+    cont = ui_create_text(root_page, &ui_img_about, "关于", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true); // TODO: 大标题 固件版本 作者 链接
     lv_group_add_obj(lv_group_get_default(), cont);
     lv_menu_set_load_page_event(menu, cont, sub_about_page);
     lv_obj_add_event_cb(cont, enter_subpage_cb, LV_EVENT_CLICKED, sub_about_page);
@@ -301,7 +300,7 @@ static void relink_bt_cb(lv_event_t *e)
 }
 
 static lv_obj_t *ui_create_text(lv_obj_t *parent, const void *icon, const char *txt,
-                                lv_menu_builder_variant_t builder_variant, std::optional<lv_obj_t **> label_o, std::optional<bool> is_from_svg)
+                                lv_menu_builder_variant_t builder_variant, lv_obj_t **label_o, bool is_from_svg)
 {
     lv_obj_t *obj = lv_menu_cont_create(parent);
     lv_obj_t *img = NULL;
@@ -323,7 +322,7 @@ static lv_obj_t *ui_create_text(lv_obj_t *parent, const void *icon, const char *
     {
         img = lv_image_create(obj);
         lv_image_set_src(img, icon);
-        if (is_from_svg.value_or(false))
+        if (is_from_svg)
         {
             lv_img_set_zoom(img, 32);
             lv_obj_set_size(img, 16, 16);
@@ -355,9 +354,9 @@ static lv_obj_t *ui_create_text(lv_obj_t *parent, const void *icon, const char *
     //     lv_obj_t* target = lv_event_get_target_obj(e);
     //     lv_obj_scroll_to_view(target, LV_ANIM_ON);
     // }, LV_EVENT_FOCUSED, NULL);
-    if (label_o.has_value())
+    if (label_o)
     {
-        *label_o.value() = label;
+        *label_o = label;
     }
     return obj;
 }
@@ -371,7 +370,7 @@ static lv_obj_t *ui_create_switch(lv_obj_t *parent, const void *icon, const char
     return obj;
 }
 // 创建下拉列表， options: apple\nbanana...
-static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, std::optional<lv_obj_t **> dd_o)
+static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, lv_obj_t **dd_o)
 {
     lv_obj_t *label;
     lv_obj_t *obj = ui_create_text(parent, icon, txt, LV_MENU_ITEM_BUILDER_VARIANT_1, &label);
@@ -404,9 +403,9 @@ static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const ch
             lv_obj_scroll_to_view_recursive(container, LV_ANIM_ON);
         } }, LV_EVENT_FOCUSED, NULL);
 
-    if (dd_o.has_value())
+    if (dd_o)
     {
-        *dd_o.value() = dd;
+        *dd_o = dd;
     }
     return obj;
 }
