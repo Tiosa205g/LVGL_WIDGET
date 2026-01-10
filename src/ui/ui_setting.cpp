@@ -2,6 +2,7 @@
 #include "ui/ui_setting.h"
 #include <string>
 
+static lv_obj_t *last_widget;
 static lv_obj_t *menu;
 static lv_obj_t *setting_widget;
 static lv_obj_t *last_enter_btn = NULL; // 记录进入子页面所用的条目
@@ -22,14 +23,17 @@ static lv_obj_t *ui_create_slider(lv_obj_t *parent, const void *icon, const char
 static lv_obj_t *ui_create_dropdown(lv_obj_t *parent, const void *icon, const char *txt, const char *options, lv_obj_t **dd_o = nullptr);
 static lv_obj_t *ui_create_sub_page(lv_obj_t *parent, const char *title, bool display_scroll = true); // 新建子页面
 static void scroll_event_cb(lv_event_t *e);
-void ui_setting_init()
+void ui_setting_init(lv_obj_t *ui_from)
 {
     lv_obj_t *btn;
+    char *from_data;
 
     lv_style_init(&scroll_style);
     lv_style_set_pad_right(&scroll_style, 0);
+    last_widget = ui_from;
+    from_data = (char *)lv_obj_get_user_data(last_widget);
+    lv_obj_set_flag(last_widget, LV_OBJ_FLAG_HIDDEN, true);
 
-    ui_set_hidden_main_widget(true);
     setting_widget = ui_add_win();
     menu = lv_menu_create(setting_widget);
 
@@ -179,13 +183,17 @@ void ui_setting_init()
     lv_obj_set_user_data(cont, (void *)0); // 标记未播放动画
 
     // section = lv_menu_section_create(root_page);
-    cont = ui_create_text(root_page, &ui_img_bt, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true); // finish
-    lv_group_add_obj(lv_group_get_default(), cont);
-    // lv_menu_set_load_page_event(menu, cont, sub_bt_page);
-    lv_obj_add_event_cb(cont, relink_bt_cb, LV_EVENT_CLICKED, NULL);
-    lv_obj_set_style_translate_x(cont, 100, 0);
-    lv_obj_set_style_opa(cont, LV_OPA_TRANSP, 0);
-    lv_obj_set_user_data(cont, (void *)0);
+
+    if (!(from_data && lv_strcmp(from_data, "bt_list") == 0))
+    {
+        cont = ui_create_text(root_page, &ui_img_bt, "设备连接", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true); // finish
+        lv_group_add_obj(lv_group_get_default(), cont);
+        // lv_menu_set_load_page_event(menu, cont, sub_bt_page);
+        lv_obj_add_event_cb(cont, relink_bt_cb, LV_EVENT_CLICKED, NULL);
+        lv_obj_set_style_translate_x(cont, 100, 0);
+        lv_obj_set_style_opa(cont, LV_OPA_TRANSP, 0);
+        lv_obj_set_user_data(cont, (void *)0);
+    }
 
     // section = lv_menu_section_create(root_page);
     cont = ui_create_text(root_page, &ui_img_wifi, "无线传输设置", LV_MENU_ITEM_BUILDER_VARIANT_1, nullptr, true); // TODO: 传输协议（BLE udp tcp）
@@ -237,9 +245,9 @@ void ui_setting_init()
 static void back_cb(lv_event_t *e)
 {
     lv_obj_t *obj = lv_event_get_target_obj(e);
-    if (lv_menu_back_button_is_root(menu, obj))
+    if (obj && lv_menu_back_button_is_root(menu, obj))
     {
-        ui_set_hidden_main_widget(false);
+        lv_obj_set_flag(last_widget, LV_OBJ_FLAG_HIDDEN, false);
         lv_obj_del(setting_widget);
     }
     else

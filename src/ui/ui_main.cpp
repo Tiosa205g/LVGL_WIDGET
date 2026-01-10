@@ -128,7 +128,7 @@ void ui_main_init()
 static void setting_widget_cb(lv_event_t *e)
 {
     // lv_timer_delete(pull_data_timer);
-    ui_setting_init();
+    ui_setting_init(main_widget);
 }
 
 // 创建设备卡片
@@ -251,11 +251,6 @@ void ui_free_main_widget()
         lv_obj_delete(main_widget);
         main_widget = NULL;
     }
-}
-
-void ui_set_hidden_main_widget(bool state)
-{
-    lv_obj_set_flag(main_widget, LV_OBJ_FLAG_HIDDEN, state);
 }
 
 // api
