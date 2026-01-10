@@ -2,18 +2,20 @@
 
 static lv_style_t style_indic_h; // 横向bar样式
 static lv_style_t style_indic_v;
-static lv_timer_t *pull_data_timer;
+// static lv_timer_t *pull_data_timer;
 static lv_obj_t *info_widget;
 static lv_obj_t *main_widget;
 static lv_obj_t *upload_label;
 static lv_obj_t *download_label;
 static lv_obj_t *tabview;
-static lv_obj_t *tabs[MAX_DEVICE_COUNT];                                                                  // 最多4个                                                                              // 纵向bar样式
-static lv_obj_t *ui_create_device_card(lv_obj_t *parent, char *device_name, char *icon, bool color_test); // 创建自定义card容器组件
+static lv_obj_t *tabs[MAX_DEVICE_COUNT];                                                      // 最多4个                                                                              // 纵向bar样式
+static lv_obj_t *ui_create_device_card(lv_obj_t *parent, char *device_name, bool color_test); // 创建自定义card容器组件
 
 static void setting_widget_cb(lv_event_t *e);      // 设置按钮回调
 static void pull_data_timer_cb(lv_timer_t *timer); // 获取设备数据回调
 
+static std::vector<std::string> linked_devices;
+static std::vector<device_card_data *> cards;
 void ui_main_init()
 {
     lv_group_t *g = lv_group_create();
@@ -50,15 +52,13 @@ void ui_main_init()
     // lv_obj_set_size(tabview, 160 * 0.6, 70);
     lv_obj_align(tabview, LV_ALIGN_CENTER, 0, 0);
 
-    char buf[13];
     int i = 0;
-    lv_snprintf(buf, 13, "#0000FF %s#", LV_SYMBOL_BLUETOOTH);
     std::vector<std::string> linked_devices = ui_get_linked_bt();
     for (std::string dev : linked_devices)
     {
         LV_LOG_USER(dev.c_str());
         lv_obj_t *tab = lv_tabview_add_tab(tabview, std::to_string(i + 1).c_str());
-        lv_obj_t *card = ui_create_device_card(tab, dev.data(), buf, true);
+        lv_obj_t *card = ui_create_device_card(tab, dev.data(), true);
         lv_obj_set_style_pad_all(tab, 0, 0);
         lv_obj_align(card, LV_ALIGN_CENTER, 0, 0);
         tabs[i] = tab;
@@ -109,18 +109,19 @@ void ui_main_init()
     lv_label_set_text(img, LV_SYMBOL_WIFI);
     lv_obj_set_style_text_font(img, &lv_font_harmonyos_12, 0);
     // lv_obj_set_style_text_color(img, lv_palette_main(LV_PALETTE_NONE), 0);
-    lv_obj_align_to(img, last, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
+    lv_obj_align_to(img, last, LV_ALIGN_OUT_RIGHT_MID, 3, 0);
     last = img;
-    img = lv_label_create(main_widget);
-    lv_label_set_text(img, LV_SYMBOL_BLUETOOTH);               // 使用内置的蓝牙符号
-    lv_obj_set_style_text_font(img, &lv_font_harmonyos_12, 0); // 设置合适的字体大小
-    lv_obj_set_style_text_color(img, lv_palette_main(LV_PALETTE_BLUE), 0);
-    lv_obj_align_to(img, last, LV_ALIGN_OUT_RIGHT_MID, 4, 0);
+
+    img = lv_image_create(main_widget);
+    lv_image_set_src(img, &lv_img_bluetooth);
+    lv_img_set_zoom(img, 32);
+    lv_obj_set_size(img, 16, 16);
+    lv_obj_align_to(img, last, LV_ALIGN_OUT_RIGHT_MID, 0, 0);
 
     ui_bind_group_to_all_encoders(lv_group_get_default());
 
     // 注册timer
-    pull_data_timer = lv_timer_create(pull_data_timer_cb, DEVICE_DATA_REFLUSH_TIME, NULL);
+    // pull_data_timer = lv_timer_create(pull_data_timer_cb, DEVICE_DATA_REFLUSH_TIME, NULL);
 }
 
 // 设置按钮回调 -> 进入设置界面
@@ -131,7 +132,7 @@ static void setting_widget_cb(lv_event_t *e)
 }
 
 // 创建设备卡片
-static lv_obj_t *ui_create_device_card(lv_obj_t *parent, char *device_name, char *icon, bool color_test)
+static lv_obj_t *ui_create_device_card(lv_obj_t *parent, char *device_name, bool color_test)
 {
     device_card_data *data = (device_card_data *)lv_malloc(sizeof(device_card_data));
     LV_ASSERT_MALLOC(data);
@@ -207,43 +208,49 @@ static lv_obj_t *ui_create_device_card(lv_obj_t *parent, char *device_name, char
     data->device_name = device_name;
 
     lv_obj_set_user_data(card, data);
-
+    cards.push_back(data);
     return card;
 }
 
-static void pull_data_timer_cb(lv_timer_t *timer)
-{
-    // lv_label_set_text_fmt(upload_label, "#00FF00 %s#%s", LV_SYMBOL_UP, get_upload_speed());
-    // lv_label_set_text_fmt(download_label, "#00FF00 %s#%s", LV_SYMBOL_DOWN, get_download_speed());
+// static void pull_data_timer_cb(lv_timer_t *timer)
+// {
+//     // lv_label_set_text_fmt(upload_label, "#00FF00 %s#%s", LV_SYMBOL_UP, get_upload_speed());
+//     // lv_label_set_text_fmt(download_label, "#00FF00 %s#%s", LV_SYMBOL_DOWN, get_download_speed());
 
-    lv_obj_t *cur_tab = tabs[lv_tabview_get_tab_active(tabview)];
-    lv_obj_t *card = lv_obj_get_child(cur_tab, 0);
-    device_card_data *card_data = (device_card_data *)lv_obj_get_user_data(card);
-    char *name = card_data->device_name;
+//     lv_obj_t *cur_tab = tabs[lv_tabview_get_tab_active(tabview)];
+//     lv_obj_t *card = lv_obj_get_child(cur_tab, 0);
+//     device_card_data *card_data = (device_card_data *)lv_obj_get_user_data(card);
+//     char *name = card_data->device_name;
 
-    // lv_bar_set_value(card_data->left_voice_bar, get_left_voice_per(name), LV_ANIM_ON);
-    // lv_bar_set_value(card_data->right_voice_bar, get_right_voice_per(name), LV_ANIM_ON);
-    // lv_bar_set_value(card_data->power_bar, get_power_per(name), LV_ANIM_ON);
-    // lv_bar_set_value(card_data->signal_bar, get_signal_per(name), LV_ANIM_ON);
+//     // lv_bar_set_value(card_data->left_voice_bar, get_left_voice_per(name), LV_ANIM_ON);
+//     // lv_bar_set_value(card_data->right_voice_bar, get_right_voice_per(name), LV_ANIM_ON);
+//     // lv_bar_set_value(card_data->power_bar, get_power_per(name), LV_ANIM_ON);
+//     // lv_bar_set_value(card_data->signal_bar, get_signal_per(name), LV_ANIM_ON);
 
-    LV_LOG_USER("pull timer触发");
-}
+//     LV_LOG_USER("pull timer触发");
+// }
 
 void ui_free_main_widget()
 {
-    for (int i = 0; i < MAX_DEVICE_COUNT; i++)
+    for (size_t i = 0; i < cards.size(); ++i)
     {
-        if (tabs[i] == NULL)
-            break;
-        lv_obj_t *cur_tab = tabs[i];
-        lv_obj_t *card = lv_obj_get_child(cur_tab, 0);
-        if (card == NULL)
-            break;
-        device_card_data *card_data = (device_card_data *)lv_obj_get_user_data(card);
-        lv_free(card_data);
+        device_card_data *card_data = cards[i];
+        if (card_data)
+        {
+            lv_free(card_data);
+        }
     }
-    lv_timer_delete(pull_data_timer);
-    lv_obj_delete(main_widget);
+    cards.clear();
+    for (int i = 0; i < MAX_DEVICE_COUNT; ++i)
+    {
+        tabs[i] = NULL;
+    }
+
+    if (main_widget && lv_obj_is_valid(main_widget))
+    {
+        lv_obj_delete(main_widget);
+        main_widget = NULL;
+    }
 }
 
 void ui_set_hidden_main_widget(bool state)

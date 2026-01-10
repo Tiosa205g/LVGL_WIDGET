@@ -258,23 +258,23 @@ void ui_bt_search()
     // 注意: 这些数据会被定时器回调异步访问，必须保证其生命周期
     // 使用 static 保证在进程生命周期内有效，避免悬垂指针导致未定义行为
     static device_data dev1 = {"00:1A:2B:3C:4D:5E", false};
-    static device_data dev2 = {"00:1A:2B:3C:4D:5F", false};
-    static device_data dev3 = {"00:1A:2B:3C:4D:5D", false};
+    // static device_data dev2 = {"00:1A:2B:3C:4D:5F", false};
+    // static device_data dev3 = {"00:1A:2B:3C:4D:5D", false};
     lv_timer_create([](lv_timer_t *timer)
                     {
         device_data* dev = (device_data*)lv_timer_get_user_data(timer);
         ui_bt_update(dev);
         lv_timer_delete(timer); }, 2000, &dev1); // 2000ms=2秒，无用户数据
-    lv_timer_create([](lv_timer_t *timer)
-                    {
-        device_data* dev = (device_data*)lv_timer_get_user_data(timer);
-        ui_bt_update(dev);
-        lv_timer_delete(timer); }, 4000, &dev2); // 2000ms=2秒，无用户数据
-    lv_timer_create([](lv_timer_t *timer)
-                    {
-        device_data* dev = (device_data*)lv_timer_get_user_data(timer);
-        ui_bt_update(dev);
-        lv_timer_delete(timer); }, 6000, &dev3); // 2000ms=2秒，无用户数据
+    // lv_timer_create([](lv_timer_t *timer)
+    //                 {
+    //     device_data* dev = (device_data*)lv_timer_get_user_data(timer);
+    //     ui_bt_update(dev);
+    //     lv_timer_delete(timer); }, 4000, &dev2); // 2000ms=2秒，无用户数据
+    // lv_timer_create([](lv_timer_t *timer)
+    //                 {
+    //     device_data* dev = (device_data*)lv_timer_get_user_data(timer);
+    //     ui_bt_update(dev);
+    //     lv_timer_delete(timer); }, 6000, &dev3); // 2000ms=2秒，无用户数据
 }
 
 static uint8_t ui_list_get_select_num()
